@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
@@ -87,6 +88,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     */
     Route::post('/posts/{post}/like', [LikeController::class, 'toggle'])
         ->name('posts.like');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Commentaires
+    |--------------------------------------------------------------------------
+    */
+    Route::post('/posts/{post}/comments', [CommentController::class, 'store'])
+        ->name('comments.store');
+    
+    Route::put('/comments/{comment}', [CommentController::class, 'update'])
+        ->name('comments.update');
+    
+    Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])
+        ->name('comments.destroy');
     
 });
 

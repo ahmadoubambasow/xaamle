@@ -28,10 +28,11 @@ class PublicPostController extends Controller
      */
     public function show(Post $post): View
     {
-        
-
-        return view('posts.show', [
-            'post' => $post->load('user'),
+        $post->load([
+            'user',
+            'comments.user',
         ]);
+
+        return view('posts.show', compact('post'));
     }
 }

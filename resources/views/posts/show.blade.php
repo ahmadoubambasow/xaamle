@@ -130,8 +130,9 @@
     </section>
 
 
+
     {{-- =========================================================
-         BARRE D'INTERACTIONS
+        BARRE D'INTERACTIONS
     ========================================================== --}}
 
     <section class="mt-4 rounded-2xl border border-gray-200 bg-white shadow-sm">
@@ -141,6 +142,7 @@
             {{-- Gauche : Likes + commentaires --}}
             <div class="flex items-center gap-1 sm:gap-2">
 
+                {{-- Like --}}
                 @php
                     $likeCount = $post->likes()->count();
 
@@ -151,8 +153,6 @@
                         : false;
                 @endphp
 
-
-                {{-- Like --}}
                 @auth
 
                     <button
@@ -199,8 +199,8 @@
 
 
                 {{-- Commentaires --}}
-                <button
-                    type="button"
+                <a
+                    href="#comments"
                     class="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100 hover:text-gray-900"
                 >
 
@@ -209,10 +209,10 @@
                     </span>
 
                     <span>
-                        0
+                        {{ $post->comments->count() }}
                     </span>
 
-                </button>
+                </a>
 
             </div>
 
@@ -248,6 +248,17 @@
         </div>
 
     </section>
+
+
+    {{-- =========================================================
+        COMMENTAIRES
+    ========================================================== --}}
+
+    <div id="comments">
+
+        <x-comments.section :post="$post" />
+
+    </div>
 
 
     {{-- =========================================================
