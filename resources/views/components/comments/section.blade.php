@@ -2,11 +2,15 @@
 
 <section
     id="comments"
+    data-comments-section
+    data-update-url-template="{{ route('comments.update', ['comment' => '__COMMENT_ID__']) }}"
+    data-delete-url-template="{{ route('comments.destroy', ['comment' => '__COMMENT_ID__']) }}"
+    data-reply-url-template="{{ route('comments.replies.store', ['comment' => '__COMMENT_ID__']) }}"
     class="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
 >
 
     {{-- =========================================================
-         EN-TÊTE / OUVERTURE
+         HEADER
     ========================================================== --}}
 
     <button
@@ -37,7 +41,7 @@
 
         <span
             id="comments-toggle-icon"
-            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600 transition-transform duration-300"
+            class="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-600 transition-transform duration-300"
         >
             <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -58,7 +62,7 @@
 
 
     {{-- =========================================================
-         CONTENU REPLIABLE
+         CONTENU
     ========================================================== --}}
 
     <div
@@ -67,114 +71,10 @@
     >
         <div class="min-h-0 overflow-hidden">
 
+            {{-- Formulaire principal --}}
+            <x-comments.form :post="$post" />
 
-            {{-- =================================================
-                 FORMULAIRE DE COMMENTAIRE
-            ================================================== --}}
-
-            @auth
-
-                <div class="border-b border-gray-100 px-6 py-5">
-
-                    <form
-                        id="comment-form"
-                        method="POST"
-                        action="{{ route('comments.store', $post) }}"
-                    >
-                        @csrf
-
-                        <div class="flex gap-3">
-
-                            {{-- Avatar --}}
-                            <div
-                                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-900 text-xs font-semibold text-white"
-                            >
-                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                            </div>
-
-                            <div class="min-w-0 flex-1">
-
-                                <textarea
-                                    id="comment-content"
-                                    name="content"
-                                    rows="3"
-                                    maxlength="1000"
-                                    placeholder="Écrivez un commentaire..."
-                                    class="block w-full resize-none rounded-xl border-gray-300 text-sm shadow-sm focus:border-gray-900 focus:ring-gray-900"
-                                ></textarea>
-
-                                <div
-                                    id="comment-error"
-                                    class="mt-2 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600"
-                                ></div>
-
-                                <div class="mt-3 flex items-center justify-between">
-
-                                    <span class="text-xs text-gray-400">
-                                        1000 caractères maximum
-                                    </span>
-
-                                    <button
-                                        type="submit"
-                                        id="comment-submit"
-                                        class="inline-flex items-center rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
-                                    >
-                                        <span id="comment-submit-text">
-                                            Commenter
-                                        </span>
-                                    </button>
-
-                                </div>
-
-                            </div>
-                        </div>
-
-                    </form>
-
-                </div>
-
-            @else
-
-                {{-- =================================================
-                     VISITEUR
-                ================================================== --}}
-
-                <div class="border-b border-gray-100 px-6 py-5">
-
-                    <div class="rounded-xl bg-gray-50 p-5 text-center">
-
-                        <div
-                            class="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-gray-200"
-                        >
-                            💬
-                        </div>
-
-                        <p class="mt-3 text-sm font-medium text-gray-900">
-                            Participez à la discussion
-                        </p>
-
-                        <p class="mt-1 text-sm text-gray-500">
-                            Connectez-vous pour laisser un commentaire.
-                        </p>
-
-                        <a
-                            href="{{ route('login') }}"
-                            class="mt-4 inline-flex items-center rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800"
-                        >
-                            Se connecter
-                        </a>
-
-                    </div>
-
-                </div>
-
-            @endauth
-
-
-            {{-- =================================================
-                 LISTE DES COMMENTAIRES
-            ================================================== --}}
-
+            {{-- Liste des commentaires --}}
             <div
                 id="comments-list"
                 class="divide-y divide-gray-100"
@@ -182,499 +82,9 @@
 
                 @forelse($post->comments as $comment)
 
-                    <article
-                        data-comment-id="{{ $comment->id }}"
-                        data-update-url="{{ route('comments.update', $comment) }}"
-                        data-delete-url="{{ route('comments.destroy', $comment) }}"
-                        data-reply-url="{{ route('comments.replies.store', $comment) }}"
-                        class="comment-item px-6 py-5"
-                    >
-
-                        <div class="flex items-start gap-3">
-
-                            {{-- Avatar --}}
-                            <div
-                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold text-gray-600"
-                            >
-                                {{ strtoupper(substr($comment->user->name, 0, 1)) }}
-                            </div>
-
-
-                            <div class="min-w-0 flex-1">
-
-                                {{-- =================================================
-                                     AFFICHAGE DU COMMENTAIRE
-                                ================================================== --}}
-
-                                <div data-comment-display>
-
-                                    <div class="flex items-start justify-between gap-3">
-
-                                        <div class="min-w-0">
-
-                                            <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-
-                                                <span class="text-sm font-semibold text-gray-900">
-                                                    {{ $comment->user->name }}
-                                                </span>
-
-                                                <span class="text-xs text-gray-400">
-                                                    {{ $comment->created_at->diffForHumans() }}
-                                                </span>
-
-                                            </div>
-
-                                        </div>
-
-
-                                        {{-- Actions propriétaire --}}
-                                        @auth
-
-                                            @if(auth()->id() === $comment->user_id)
-
-                                                <div class="flex shrink-0 items-center gap-1">
-
-                                                    <button
-                                                        type="button"
-                                                        data-action="edit"
-                                                        class="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
-                                                        title="Modifier"
-                                                    >
-                                                        <svg
-                                                            class="h-4 w-4"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            stroke="currentColor"
-                                                        >
-                                                            <path
-                                                                stroke-linecap="round"
-                                                                stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.5-9.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 8.5-8.5z"
-                                                            />
-                                                        </svg>
-                                                    </button>
-
-                                                    <button
-                                                        type="button"
-                                                        data-action="delete"
-                                                        class="rounded-lg p-2 text-gray-400 transition hover:bg-red-50 hover:text-red-600"
-                                                        title="Supprimer"
-                                                    >
-                                                        <svg
-                                                            class="h-4 w-4"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            stroke="currentColor"
-                                                        >
-                                                            <path
-                                                                stroke-linecap="round"
-                                                                stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6V7m-9 0h14m-8-3h4a1 1 0 0 1 1 1v2H9V5a1 1 0 0 1 1-1z"
-                                                            />
-                                                        </svg>
-                                                    </button>
-
-                                                </div>
-
-                                            @endif
-
-                                        @endauth
-
-                                    </div>
-
-
-                                    {{-- Contenu --}}
-                                    <p
-                                        data-comment-text
-                                        class="mt-2 whitespace-pre-line text-sm leading-6 text-gray-700"
-                                    >
-                                        {{ $comment->content }}
-                                    </p>
-
-
-                                    {{-- Actions --}}
-                                    <div class="mt-3 flex items-center gap-4">
-
-                                        @auth
-
-                                            <button
-                                                type="button"
-                                                data-action="reply"
-                                                class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition hover:text-gray-900"
-                                            >
-                                                <svg
-                                                    class="h-4 w-4"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                >
-                                                    <path
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M3 10h10a4 4 0 0 1 4 4v1m0 0-3-3m3 3-3 3"
-                                                    />
-                                                </svg>
-
-                                                Répondre
-                                            </button>
-
-                                        @else
-
-                                            <a
-                                                href="{{ route('login') }}"
-                                                class="text-sm font-medium text-gray-500 transition hover:text-gray-900"
-                                            >
-                                                Connectez-vous pour répondre
-                                            </a>
-
-                                        @endauth
-
-
-                                        @if($comment->replies->count() > 0)
-
-                                            <button
-                                                type="button"
-                                                data-action="toggle-replies"
-                                                class="text-sm font-medium text-gray-500 transition hover:text-gray-900"
-                                            >
-                                                <span data-replies-count>
-                                                    {{ $comment->replies->count() }}
-                                                </span>
-
-                                                <span data-replies-label>
-                                                    {{ $comment->replies->count() > 1
-                                                        ? 'réponses'
-                                                        : 'réponse'
-                                                    }}
-                                                </span>
-                                            </button>
-
-                                        @endif
-
-                                    </div>
-
-                                </div>
-
-
-                                {{-- =================================================
-                                     FORMULAIRE DE MODIFICATION
-                                ================================================== --}}
-
-                                @auth
-
-                                    @if(auth()->id() === $comment->user_id)
-
-                                        <div
-                                            data-comment-edit
-                                            class="hidden"
-                                        >
-
-                                            <textarea
-                                                data-edit-input
-                                                maxlength="1000"
-                                                rows="3"
-                                                class="block w-full resize-none rounded-xl border-gray-300 text-sm shadow-sm focus:border-gray-900 focus:ring-gray-900"
-                                            >{{ $comment->content }}</textarea>
-
-                                            <div
-                                                data-edit-error
-                                                class="mt-2 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600"
-                                            ></div>
-
-                                            <div class="mt-3 flex justify-end gap-2">
-
-                                                <button
-                                                    type="button"
-                                                    data-action="cancel-edit"
-                                                    class="rounded-xl px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100"
-                                                >
-                                                    Annuler
-                                                </button>
-
-                                                <button
-                                                    type="button"
-                                                    data-action="save-edit"
-                                                    class="rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
-                                                >
-                                                    <span data-save-text>
-                                                        Enregistrer
-                                                    </span>
-                                                </button>
-
-                                            </div>
-
-                                        </div>
-
-                                    @endif
-
-                                @endauth
-
-
-                                {{-- =================================================
-                                     CONFIRMATION SUPPRESSION
-                                ================================================== --}}
-
-                                @auth
-
-                                    @if(auth()->id() === $comment->user_id)
-
-                                        <div
-                                            data-delete-confirm
-                                            class="mt-3 hidden rounded-xl border border-red-100 bg-red-50 p-4"
-                                        >
-
-                                            <p class="text-sm font-medium text-gray-900">
-                                                Supprimer ce commentaire ?
-                                            </p>
-
-                                            <p class="mt-1 text-xs text-gray-500">
-                                                Cette action est irréversible.
-                                            </p>
-
-                                            <div
-                                                data-delete-error
-                                                class="mt-2 hidden text-sm text-red-600"
-                                            ></div>
-
-                                            <div class="mt-3 flex justify-end gap-2">
-
-                                                <button
-                                                    type="button"
-                                                    data-action="cancel-delete"
-                                                    class="rounded-xl px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-white"
-                                                >
-                                                    Annuler
-                                                </button>
-
-                                                <button
-                                                    type="button"
-                                                    data-action="confirm-delete"
-                                                    class="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
-                                                >
-                                                    <span data-delete-text>
-                                                        Supprimer
-                                                    </span>
-                                                </button>
-
-                                            </div>
-
-                                        </div>
-
-                                    @endif
-
-                                @endauth
-
-
-                                {{-- =================================================
-                                     FORMULAIRE DE RÉPONSE
-                                ================================================== --}}
-
-                                @auth
-
-                                    <div
-                                        data-reply-form
-                                        class="mt-4 hidden"
-                                    >
-
-                                        <div class="rounded-xl border border-gray-200 bg-gray-50 p-4">
-
-                                            <div class="mb-3 flex items-center gap-2">
-
-                                                <div
-                                                    class="flex h-7 w-7 items-center justify-center rounded-full bg-gray-900 text-[10px] font-semibold text-white"
-                                                >
-                                                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                                                </div>
-
-                                                <span class="text-xs font-medium text-gray-500">
-                                                    Répondre à {{ $comment->user->name }}
-                                                </span>
-
-                                            </div>
-
-                                            <textarea
-                                                data-reply-input
-                                                rows="3"
-                                                maxlength="1000"
-                                                placeholder="Écrivez votre réponse..."
-                                                class="block w-full resize-none rounded-xl border-gray-300 bg-white text-sm shadow-sm focus:border-gray-900 focus:ring-gray-900"
-                                            ></textarea>
-
-                                            <div
-                                                data-reply-error
-                                                class="mt-2 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600"
-                                            ></div>
-
-                                            <div class="mt-3 flex items-center justify-between">
-
-                                                <span
-                                                    data-reply-counter
-                                                    class="text-xs text-gray-400"
-                                                >
-                                                    0 / 1000
-                                                </span>
-
-                                                <div class="flex items-center gap-2">
-
-                                                    <button
-                                                        type="button"
-                                                        data-action="cancel-reply"
-                                                        class="rounded-xl px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100"
-                                                    >
-                                                        Annuler
-                                                    </button>
-
-                                                    <button
-                                                        type="button"
-                                                        data-action="submit-reply"
-                                                        class="rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
-                                                        disabled
-                                                    >
-                                                        <span data-reply-submit-text>
-                                                            Répondre
-                                                        </span>
-                                                    </button>
-
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-
-                                @endauth
-
-
-                                {{-- =================================================
-                                     RÉPONSES
-                                ================================================== --}}
-
-                                @if($comment->replies->count() > 0)
-
-                                    <div
-                                        data-replies-container
-                                        class="mt-4 hidden space-y-4 border-l-2 border-gray-100 pl-4"
-                                    >
-
-                                        @foreach($comment->replies as $reply)
-
-                                            <article
-                                                data-reply-id="{{ $reply->id }}"
-                                                class="reply-item"
-                                            >
-
-                                                <div class="flex items-start gap-3">
-
-                                                    {{-- Avatar --}}
-                                                    <div
-                                                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-600"
-                                                    >
-                                                        {{ strtoupper(substr($reply->user->name, 0, 1)) }}
-                                                    </div>
-
-
-                                                    <div class="min-w-0 flex-1">
-
-                                                        <div class="flex items-start justify-between gap-3">
-
-                                                            <div>
-
-                                                                <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-
-                                                                    <span class="text-sm font-semibold text-gray-900">
-                                                                        {{ $reply->user->name }}
-                                                                    </span>
-
-                                                                    <span class="text-xs text-gray-400">
-                                                                        {{ $reply->created_at->diffForHumans() }}
-                                                                    </span>
-
-                                                                </div>
-
-                                                            </div>
-
-
-                                                            {{-- Actions réponse --}}
-                                                            @auth
-
-                                                                @if(auth()->id() === $reply->user_id)
-
-                                                                    <div class="flex shrink-0 items-center gap-1">
-
-                                                                        <button
-                                                                            type="button"
-                                                                            class="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
-                                                                            title="Modifier"
-                                                                        >
-                                                                            <svg
-                                                                                class="h-3.5 w-3.5"
-                                                                                fill="none"
-                                                                                viewBox="0 0 24 24"
-                                                                                stroke="currentColor"
-                                                                            >
-                                                                                <path
-                                                                                    stroke-linecap="round"
-                                                                                    stroke-linejoin="round"
-                                                                                    stroke-width="2"
-                                                                                    d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.5-9.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 8.5-8.5z"
-                                                                                />
-                                                                            </svg>
-                                                                        </button>
-
-                                                                        <button
-                                                                            type="button"
-                                                                            class="rounded-lg p-1.5 text-gray-400 transition hover:bg-red-50 hover:text-red-600"
-                                                                            title="Supprimer"
-                                                                        >
-                                                                            <svg
-                                                                                class="h-3.5 w-3.5"
-                                                                                fill="none"
-                                                                                viewBox="0 0 24 24"
-                                                                                stroke="currentColor"
-                                                                            >
-                                                                                <path
-                                                                                    stroke-linecap="round"
-                                                                                    stroke-linejoin="round"
-                                                                                    stroke-width="2"
-                                                                                    d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6V7m-9 0h14"
-                                                                                />
-                                                                            </svg>
-                                                                        </button>
-
-                                                                    </div>
-
-                                                                @endif
-
-                                                            @endauth
-
-                                                        </div>
-
-
-                                                        <p class="mt-1 whitespace-pre-line text-sm leading-6 text-gray-600">
-                                                            {{ $reply->content }}
-                                                        </p>
-
-                                                    </div>
-
-                                                </div>
-
-                                            </article>
-
-                                        @endforeach
-
-                                    </div>
-
-                                @endif
-
-                            </div>
-
-                        </div>
-
-                    </article>
+                    <x-comments.item
+                        :comment="$comment"
+                    />
 
                 @empty
 
@@ -682,7 +92,6 @@
                         data-comments-empty
                         class="px-6 py-10 text-center"
                     >
-
                         <div
                             class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100"
                         >
@@ -696,7 +105,6 @@
                         <p class="mt-1 text-sm text-gray-500">
                             Soyez le premier à participer à la discussion.
                         </p>
-
                     </div>
 
                 @endforelse
@@ -713,576 +121,164 @@
      JAVASCRIPT
 ============================================================= --}}
 
+@auth
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
-    const commentsSection = document.getElementById('comments');
+    const section = document.querySelector(
+        '[data-comments-section]'
+    );
 
-    if (!commentsSection) {
+    if (!section) {
         return;
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | CSRF
-    |--------------------------------------------------------------------------
-    */
+    /* =========================================================
+       RÉFÉRENCES
+    ========================================================== */
 
-    @auth
+    const commentsList = section.querySelector(
+        '#comments-list'
+    );
 
-        const csrfToken = document
-            .querySelector('meta[name="csrf-token"]')
-            ?.getAttribute('content');
+    const commentsCount = section.querySelector(
+        '#comments-count'
+    );
 
-        if (!csrfToken) {
-            console.error('Token CSRF introuvable.');
-            return;
-        }
+    const commentsLabel = section.querySelector(
+        '#comments-label'
+    );
 
-    @endauth
+    const csrfToken = document
+        .querySelector('meta[name="csrf-token"]')
+        ?.getAttribute('content');
 
+    const updateUrlTemplate =
+        section.dataset.updateUrlTemplate;
 
-    /*
-    |--------------------------------------------------------------------------
-    | Ouverture / fermeture des commentaires
-    |--------------------------------------------------------------------------
-    */
+    const deleteUrlTemplate =
+        section.dataset.deleteUrlTemplate;
 
-    const toggle =
-        commentsSection.querySelector('#comments-toggle');
+    const replyUrlTemplate =
+        section.dataset.replyUrlTemplate;
 
-    const content =
-        commentsSection.querySelector('#comments-content');
 
-    const icon =
-        commentsSection.querySelector('#comments-toggle-icon');
+    /* =========================================================
+       HEADER
+    ========================================================== */
 
+    const toggle = section.querySelector(
+        '#comments-toggle'
+    );
 
-    if (toggle && content && icon) {
+    const content = section.querySelector(
+        '#comments-content'
+    );
 
-        toggle.addEventListener('click', () => {
+    const icon = section.querySelector(
+        '#comments-toggle-icon'
+    );
 
-            const isOpen =
-                toggle.getAttribute('aria-expanded') === 'true';
 
-            if (isOpen) {
+    toggle?.addEventListener('click', () => {
 
-                toggle.setAttribute(
-                    'aria-expanded',
-                    'false'
-                );
+        const isOpen =
+            toggle.getAttribute('aria-expanded') === 'true';
 
-                content.classList.remove(
-                    'grid-rows-[1fr]'
-                );
 
-                content.classList.add(
-                    'grid-rows-[0fr]'
-                );
-
-                icon.classList.remove(
-                    'rotate-180'
-                );
-
-            } else {
-
-                toggle.setAttribute(
-                    'aria-expanded',
-                    'true'
-                );
-
-                content.classList.remove(
-                    'grid-rows-[0fr]'
-                );
-
-                content.classList.add(
-                    'grid-rows-[1fr]'
-                );
-
-                icon.classList.add(
-                    'rotate-180'
-                );
-
-            }
-
-        });
-
-    }
-
-
-    @auth
-
-        /*
-        |--------------------------------------------------------------------------
-        | Références
-        |--------------------------------------------------------------------------
-        */
-
-        const form =
-            commentsSection.querySelector('#comment-form');
-
-        const textarea =
-            commentsSection.querySelector('#comment-content');
-
-        const submitButton =
-            commentsSection.querySelector('#comment-submit');
-
-        const submitText =
-            commentsSection.querySelector('#comment-submit-text');
-
-        const errorBox =
-            commentsSection.querySelector('#comment-error');
-
-        const commentsList =
-            commentsSection.querySelector('#comments-list');
-
-        const commentsCount =
-            commentsSection.querySelector('#comments-count');
-
-        const commentsLabel =
-            commentsSection.querySelector('#comments-label');
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Création d'un commentaire
-        |--------------------------------------------------------------------------
-        */
-
-        if (form) {
-
-            form.addEventListener('submit', async (event) => {
-
-                event.preventDefault();
-
-                hideError(errorBox);
-
-                const commentContent =
-                    textarea.value.trim();
-
-
-                if (!commentContent) {
-
-                    showError(
-                        errorBox,
-                        'Veuillez écrire un commentaire.'
-                    );
-
-                    textarea.focus();
-
-                    return;
-                }
-
-
-                if (commentContent.length < 2) {
-
-                    showError(
-                        errorBox,
-                        'Votre commentaire doit contenir au moins 2 caractères.'
-                    );
-
-                    textarea.focus();
-
-                    return;
-                }
-
-
-                setButtonLoading(
-                    submitButton,
-                    submitText,
-                    true,
-                    'Publication...'
-                );
-
-
-                try {
-
-                    const response = await fetch(
-                        form.action,
-                        {
-                            method: 'POST',
-
-                            headers: {
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': csrfToken,
-                                'X-Requested-With': 'XMLHttpRequest'
-                            },
-
-                            body: JSON.stringify({
-                                content: commentContent
-                            })
-                        }
-                    );
-
-
-                    const data =
-                        await parseJson(response);
-
-
-                    if (response.status === 422) {
-
-                        showError(
-                            errorBox,
-                            data.errors?.content?.[0]
-                            ?? 'Le commentaire est invalide.'
-                        );
-
-                        return;
-                    }
-
-
-                    if (!response.ok) {
-
-                        throw new Error(
-                            data.message
-                            ?? 'Impossible d’ajouter le commentaire.'
-                        );
-                    }
-
-
-                    addComment(
-                        data.comment
-                    );
-
-
-                    updateCommentsCount(
-                        data.comments_count
-                    );
-
-
-                    textarea.value = '';
-
-                    textarea.focus();
-
-                } catch (error) {
-
-                    console.error(
-                        'Erreur création commentaire :',
-                        error
-                    );
-
-                    showError(
-                        errorBox,
-                        error.message
-                        ?? 'Impossible d’ajouter le commentaire.'
-                    );
-
-                } finally {
-
-                    setButtonLoading(
-                        submitButton,
-                        submitText,
-                        false,
-                        'Commenter'
-                    );
-
-                }
-
-            });
-
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Gestion globale des actions
-        |--------------------------------------------------------------------------
-        */
-
-        commentsList.addEventListener(
-            'click',
-            async (event) => {
-
-                const button =
-                    event.target.closest('button[data-action]');
-
-                if (!button) {
-                    return;
-                }
-
-
-                const action =
-                    button.dataset.action;
-
-
-                const article =
-                    button.closest('[data-comment-id]');
-
-
-                if (!article) {
-                    return;
-                }
-
-
-                if (action === 'edit') {
-
-                    openEdit(article);
-
-                    return;
-                }
-
-
-                if (action === 'cancel-edit') {
-
-                    closeEdit(article);
-
-                    return;
-                }
-
-
-                if (action === 'save-edit') {
-
-                    await saveEdit(article);
-
-                    return;
-                }
-
-
-                if (action === 'delete') {
-
-                    openDeleteConfirmation(article);
-
-                    return;
-                }
-
-
-                if (action === 'cancel-delete') {
-
-                    closeDeleteConfirmation(article);
-
-                    return;
-                }
-
-
-                if (action === 'confirm-delete') {
-
-                    await deleteComment(article);
-
-                    return;
-                }
-
-
-                if (action === 'reply') {
-
-                    openReplyForm(article);
-
-                    return;
-                }
-
-
-                if (action === 'cancel-reply') {
-
-                    closeReplyForm(article);
-
-                    return;
-                }
-
-
-                if (action === 'submit-reply') {
-
-                    await submitReply(article);
-
-                    return;
-                }
-
-
-                if (action === 'toggle-replies') {
-
-                    toggleReplies(article);
-
-                }
-
-            }
+        toggle.setAttribute(
+            'aria-expanded',
+            String(!isOpen)
         );
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Gestion du textarea de réponse
-        |--------------------------------------------------------------------------
-        */
+        if (isOpen) {
 
-        commentsList.addEventListener(
-            'input',
-            (event) => {
+            content.classList.remove(
+                'grid-rows-[1fr]'
+            );
 
-                if (!event.target.matches('[data-reply-input]')) {
-                    return;
-                }
+            content.classList.add(
+                'grid-rows-[0fr]'
+            );
 
+            icon.classList.remove(
+                'rotate-180'
+            );
 
-                const input =
-                    event.target;
+        } else {
 
-                const article =
-                    input.closest('[data-comment-id]');
+            content.classList.remove(
+                'grid-rows-[0fr]'
+            );
 
-                const counter =
-                    article.querySelector('[data-reply-counter]');
+            content.classList.add(
+                'grid-rows-[1fr]'
+            );
 
-                const button =
-                    article.querySelector('[data-action="submit-reply"]');
-
-
-                counter.textContent =
-                    `${input.value.length} / 1000`;
-
-
-                button.disabled =
-                    input.value.trim().length < 2;
-
-            }
-        );
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Ouvrir formulaire réponse
-        |--------------------------------------------------------------------------
-        */
-
-        function openReplyForm(article) {
-
-            const form =
-                article.querySelector('[data-reply-form]');
-
-            if (!form) {
-                return;
-            }
-
-
-            form.classList.remove('hidden');
-
-
-            const input =
-                form.querySelector('[data-reply-input]');
-
-            if (input) {
-                input.focus();
-            }
-
+            icon.classList.add(
+                'rotate-180'
+            );
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Fermer formulaire réponse
-        |--------------------------------------------------------------------------
-        */
-
-        function closeReplyForm(article) {
-
-            const form =
-                article.querySelector('[data-reply-form]');
-
-            if (!form) {
-                return;
-            }
+    });
 
 
-            const input =
-                form.querySelector('[data-reply-input]');
+    /* =========================================================
+       CRÉATION COMMENTAIRE
+    ========================================================== */
 
-            const error =
-                form.querySelector('[data-reply-error]');
-
-            const counter =
-                form.querySelector('[data-reply-counter]');
-
-            const button =
-                form.querySelector('[data-action="submit-reply"]');
+    const commentForm = section.querySelector(
+        '#comment-form'
+    );
 
 
-            input.value = '';
+    commentForm?.addEventListener(
+        'submit',
+        async (event) => {
 
-            counter.textContent =
-                '0 / 1000';
-
-            button.disabled =
-                true;
-
-            hideError(error);
-
-            form.classList.add('hidden');
-
-        }
+            event.preventDefault();
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Envoyer une réponse
-        |--------------------------------------------------------------------------
-        */
+            const textarea = commentForm.querySelector(
+                '#comment-content'
+            );
 
-        async function submitReply(article) {
+            const errorBox = commentForm.querySelector(
+                '#comment-error'
+            );
 
-            const url =
-                article.dataset.replyUrl;
+            const button = commentForm.querySelector(
+                '#comment-submit'
+            );
 
-            const form =
-                article.querySelector('[data-reply-form]');
-
-            const input =
-                article.querySelector('[data-reply-input]');
-
-            const error =
-                article.querySelector('[data-reply-error]');
-
-            const button =
-                article.querySelector('[data-action="submit-reply"]');
-
-            const buttonText =
-                article.querySelector('[data-reply-submit-text]');
+            const buttonText = commentForm.querySelector(
+                '#comment-submit-text'
+            );
 
 
-            if (
-                !url ||
-                !form ||
-                !input ||
-                !error ||
-                !button ||
-                !buttonText
-            ) {
-                return;
-            }
+            hideError(errorBox);
 
 
-            hideError(error);
+            const value = textarea.value.trim();
 
 
-            const content =
-                input.value.trim();
-
-
-            if (!content) {
+            if (value.length < 2) {
 
                 showError(
-                    error,
-                    'Veuillez écrire une réponse.'
+                    errorBox,
+                    'Votre commentaire doit contenir au moins 2 caractères.'
                 );
 
-                input.focus();
+                textarea.focus();
 
                 return;
             }
 
 
-            if (content.length < 2) {
-
-                showError(
-                    error,
-                    'Votre réponse doit contenir au moins 2 caractères.'
-                );
-
-                input.focus();
-
-                return;
-            }
-
-
-            setButtonLoading(
+            setLoading(
                 button,
                 buttonText,
                 true,
@@ -1293,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
 
                 const response = await fetch(
-                    url,
+                    commentForm.action,
                     {
                         method: 'POST',
 
@@ -1305,588 +301,21 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
 
                         body: JSON.stringify({
-                            content: content
+                            content: value
                         })
                     }
                 );
 
 
-                const data =
-                    await parseJson(response);
+                const data = await parseJson(
+                    response
+                );
 
 
                 if (response.status === 422) {
 
                     showError(
-                        error,
-                        data.errors?.content?.[0]
-                        ?? 'La réponse est invalide.'
-                    );
-
-                    return;
-                }
-
-
-                if (response.status === 403) {
-
-                    showError(
-                        error,
-                        'Vous n’êtes pas autorisé à répondre.'
-                    );
-
-                    return;
-                }
-
-
-                if (!response.ok) {
-
-                    throw new Error(
-                        data.message
-                        ?? 'Impossible d’ajouter la réponse.'
-                    );
-                }
-
-
-                addReply(
-                    article,
-                    data.reply
-                );
-
-
-                input.value = '';
-
-                const counter =
-                    article.querySelector('[data-reply-counter]');
-
-                counter.textContent =
-                    '0 / 1000';
-
-
-                button.disabled =
-                    true;
-
-
-                form.classList.add('hidden');
-
-            } catch (error) {
-
-                console.error(
-                    'Erreur création réponse :',
-                    error
-                );
-
-                showError(
-                    error,
-                    error.message
-                    ?? 'Impossible d’ajouter la réponse.'
-                );
-
-            } finally {
-
-                setButtonLoading(
-                    button,
-                    buttonText,
-                    false,
-                    'Répondre'
-                );
-
-            }
-
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Ajouter une réponse dans le DOM
-        |--------------------------------------------------------------------------
-        */
-
-        function addReply(article, reply) {
-
-            let container =
-                article.querySelector('[data-replies-container]');
-
-
-            if (!container) {
-
-                container =
-                    document.createElement('div');
-
-                container.dataset.repliesContainer = '';
-
-                container.className =
-                    'mt-4 space-y-4 border-l-2 border-gray-100 pl-4';
-
-
-                const replyForm =
-                    article.querySelector('[data-reply-form]');
-
-                replyForm.insertAdjacentElement(
-                    'afterend',
-                    container
-                );
-
-
-                createRepliesToggle(
-                    article
-                );
-
-            }
-
-
-            const replyArticle =
-                document.createElement('article');
-
-            replyArticle.dataset.replyId =
-                reply.id;
-
-            replyArticle.className =
-                'reply-item';
-
-
-            const initial =
-                reply.user.name
-                    .charAt(0)
-                    .toUpperCase();
-
-
-            replyArticle.innerHTML = `
-
-                <div class="flex items-start gap-3">
-
-                    <div
-                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-600"
-                    >
-                        ${escapeHtml(initial)}
-                    </div>
-
-                    <div class="min-w-0 flex-1">
-
-                        <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-
-                            <span class="text-sm font-semibold text-gray-900">
-                                ${escapeHtml(reply.user.name)}
-                            </span>
-
-                            <span class="text-xs text-gray-400">
-                                ${escapeHtml(reply.created_at)}
-                            </span>
-
-                        </div>
-
-                        <p class="mt-1 whitespace-pre-line text-sm leading-6 text-gray-600">
-                            ${escapeHtml(reply.content)}
-                        </p>
-
-                    </div>
-
-                </div>
-
-            `;
-
-
-            container.appendChild(
-                replyArticle
-            );
-
-
-            container.classList.remove(
-                'hidden'
-            );
-
-
-            updateRepliesCount(
-                article
-            );
-
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Créer bouton réponses
-        |--------------------------------------------------------------------------
-        */
-
-        function createRepliesToggle(article) {
-
-            const actions =
-                article.querySelector('[data-action="reply"]')
-                    ?.parentElement;
-
-
-            if (!actions) {
-                return;
-            }
-
-
-            if (
-                actions.querySelector(
-                    '[data-action="toggle-replies"]'
-                )
-            ) {
-                return;
-            }
-
-
-            const button =
-                document.createElement('button');
-
-            button.type =
-                'button';
-
-            button.dataset.action =
-                'toggle-replies';
-
-            button.className =
-                'text-sm font-medium text-gray-500 transition hover:text-gray-900';
-
-            button.innerHTML = `
-                <span data-replies-count>0</span>
-                <span data-replies-label>réponse</span>
-            `;
-
-
-            actions.appendChild(
-                button
-            );
-
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Afficher / masquer les réponses
-        |--------------------------------------------------------------------------
-        */
-
-        function toggleReplies(article) {
-
-            const container =
-                article.querySelector('[data-replies-container]');
-
-            if (!container) {
-                return;
-            }
-
-
-            container.classList.toggle(
-                'hidden'
-            );
-
-
-            const button =
-                article.querySelector(
-                    '[data-action="toggle-replies"]'
-                );
-
-
-            if (!button) {
-                return;
-            }
-
-
-            const count =
-                article.querySelectorAll(
-                    '.reply-item'
-                ).length;
-
-
-            const label =
-                button.querySelector(
-                    '[data-replies-label]'
-                );
-
-
-            if (container.classList.contains('hidden')) {
-
-                label.textContent =
-                    count > 1
-                        ? 'réponses'
-                        : 'réponse';
-
-            } else {
-
-                label.textContent =
-                    'Masquer les réponses';
-
-            }
-
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Compteur réponses
-        |--------------------------------------------------------------------------
-        */
-
-        function updateRepliesCount(article) {
-
-            const count =
-                article.querySelectorAll(
-                    '.reply-item'
-                ).length;
-
-
-            const countElement =
-                article.querySelector(
-                    '[data-replies-count]'
-                );
-
-            const label =
-                article.querySelector(
-                    '[data-replies-label]'
-                );
-
-
-            if (countElement) {
-
-                countElement.textContent =
-                    count;
-
-            }
-
-
-            if (label) {
-
-                label.textContent =
-                    count > 1
-                        ? 'réponses'
-                        : 'réponse';
-
-            }
-
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Modifier commentaire
-        |--------------------------------------------------------------------------
-        */
-
-        function openEdit(article) {
-
-            const display =
-                article.querySelector(
-                    '[data-comment-display]'
-                );
-
-            const edit =
-                article.querySelector(
-                    '[data-comment-edit]'
-                );
-
-            const input =
-                article.querySelector(
-                    '[data-edit-input]'
-                );
-
-
-            if (!display || !edit || !input) {
-                return;
-            }
-
-
-            display.classList.add(
-                'hidden'
-            );
-
-            edit.classList.remove(
-                'hidden'
-            );
-
-
-            input.focus();
-
-            input.setSelectionRange(
-                input.value.length,
-                input.value.length
-            );
-
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Annuler modification
-        |--------------------------------------------------------------------------
-        */
-
-        function closeEdit(article) {
-
-            const display =
-                article.querySelector(
-                    '[data-comment-display]'
-                );
-
-            const edit =
-                article.querySelector(
-                    '[data-comment-edit]'
-                );
-
-            const input =
-                article.querySelector(
-                    '[data-edit-input]'
-                );
-
-            const error =
-                article.querySelector(
-                    '[data-edit-error]'
-                );
-
-            const text =
-                article.querySelector(
-                    '[data-comment-text]'
-                );
-
-
-            if (!display || !edit || !input) {
-                return;
-            }
-
-
-            if (text) {
-
-                input.value =
-                    text.textContent.trim();
-
-            }
-
-
-            hideError(error);
-
-            edit.classList.add(
-                'hidden'
-            );
-
-            display.classList.remove(
-                'hidden'
-            );
-
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Enregistrer modification
-        |--------------------------------------------------------------------------
-        */
-
-        async function saveEdit(article) {
-
-            const url =
-                article.dataset.updateUrl;
-
-            const input =
-                article.querySelector(
-                    '[data-edit-input]'
-                );
-
-            const error =
-                article.querySelector(
-                    '[data-edit-error]'
-                );
-
-            const saveButton =
-                article.querySelector(
-                    '[data-action="save-edit"]'
-                );
-
-            const saveText =
-                article.querySelector(
-                    '[data-save-text]'
-                );
-
-            const text =
-                article.querySelector(
-                    '[data-comment-text]'
-                );
-
-
-            if (
-                !url ||
-                !input ||
-                !error ||
-                !saveButton ||
-                !saveText ||
-                !text
-            ) {
-                return;
-            }
-
-
-            hideError(error);
-
-
-            const newContent =
-                input.value.trim();
-
-
-            if (!newContent) {
-
-                showError(
-                    error,
-                    'Veuillez écrire un commentaire.'
-                );
-
-                input.focus();
-
-                return;
-            }
-
-
-            if (newContent.length < 2) {
-
-                showError(
-                    error,
-                    'Votre commentaire doit contenir au moins 2 caractères.'
-                );
-
-                input.focus();
-
-                return;
-            }
-
-
-            setButtonLoading(
-                saveButton,
-                saveText,
-                true,
-                'Enregistrement...'
-            );
-
-
-            try {
-
-                const response = await fetch(
-                    url,
-                    {
-                        method: 'PUT',
-
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': csrfToken,
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-
-                        body: JSON.stringify({
-                            content: newContent
-                        })
-                    }
-                );
-
-
-                const data =
-                    await parseJson(response);
-
-
-                if (response.status === 422) {
-
-                    showError(
-                        error,
+                        errorBox,
                         data.errors?.content?.[0]
                         ?? 'Le commentaire est invalide.'
                     );
@@ -1895,208 +324,639 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
 
-                if (response.status === 403) {
-
-                    showError(
-                        error,
-                        'Vous n’êtes pas autorisé à modifier ce commentaire.'
-                    );
-
-                    return;
-                }
-
-
                 if (!response.ok) {
 
                     throw new Error(
                         data.message
-                        ?? 'Impossible de modifier le commentaire.'
+                        ?? 'Impossible d’ajouter le commentaire.'
                     );
                 }
 
 
-                text.textContent =
-                    data.comment.content;
+                addComment(
+                    data.comment
+                );
 
 
-                closeEdit(article);
+                updateCommentsCount(
+                    data.comments_count
+                );
+
+
+                textarea.value = '';
+
 
             } catch (error) {
 
-                console.error(
-                    'Erreur modification commentaire :',
-                    error
-                );
+                console.error(error);
 
                 showError(
-                    article.querySelector('[data-edit-error]'),
+                    errorBox,
                     error.message
-                    ?? 'Impossible de modifier le commentaire.'
                 );
+
 
             } finally {
 
-                setButtonLoading(
-                    saveButton,
-                    saveText,
+                setLoading(
+                    button,
+                    buttonText,
                     false,
-                    'Enregistrer'
+                    'Commenter'
                 );
 
             }
 
         }
+    );
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Confirmation suppression
-        |--------------------------------------------------------------------------
-        */
+    /* =========================================================
+       DÉLÉGATION DES ÉVÉNEMENTS
+    ========================================================== */
 
-        function openDeleteConfirmation(article) {
+    commentsList.addEventListener(
+        'click',
+        async (event) => {
 
-            const display =
-                article.querySelector(
-                    '[data-comment-display]'
-                );
-
-            const confirmation =
-                article.querySelector(
-                    '[data-delete-confirm]'
-                );
+            const button = event.target.closest(
+                '[data-action]'
+            );
 
 
-            if (!display || !confirmation) {
+            if (!button) {
                 return;
             }
 
 
-            display.classList.add(
-                'hidden'
-            );
-
-            confirmation.classList.remove(
-                'hidden'
-            );
-
-        }
+            const action =
+                button.dataset.action;
 
 
-        function closeDeleteConfirmation(article) {
-
-            const display =
-                article.querySelector(
-                    '[data-comment-display]'
-                );
-
-            const confirmation =
-                article.querySelector(
-                    '[data-delete-confirm]'
+            const article =
+                button.closest(
+                    '[data-comment-id]'
                 );
 
 
-            if (!display || !confirmation) {
+            if (!article) {
                 return;
             }
 
 
-            confirmation.classList.add(
-                'hidden'
-            );
+            switch (action) {
 
-            display.classList.remove(
-                'hidden'
-            );
+                case 'edit':
+                    openEdit(article);
+                    break;
+
+                case 'cancel-edit':
+                    closeEdit(article);
+                    break;
+
+                case 'save-edit':
+                    await saveEdit(article);
+                    break;
+
+                case 'delete':
+                    openDelete(article);
+                    break;
+
+                case 'cancel-delete':
+                    closeDelete(article);
+                    break;
+
+                case 'confirm-delete':
+                    await deleteComment(article);
+                    break;
+
+                case 'reply':
+                    openReply(article);
+                    break;
+
+                case 'cancel-reply':
+                    closeReply(article);
+                    break;
+
+                case 'submit-reply':
+                    await submitReply(article);
+                    break;
+
+                case 'toggle-replies':
+                    toggleReplies(article);
+                    break;
+            }
 
         }
+    );
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Supprimer commentaire
-        |--------------------------------------------------------------------------
-        */
+    /* =========================================================
+       COMPTEUR RÉPONSE
+    ========================================================== */
 
-        async function deleteComment(article) {
+    commentsList.addEventListener(
+        'input',
+        (event) => {
 
-            const url =
-                article.dataset.deleteUrl;
+            const input =
+                event.target.closest(
+                    '[data-reply-input]'
+                );
+
+
+            if (!input) {
+                return;
+            }
+
+
+            const article =
+                input.closest(
+                    '[data-comment-id]'
+                );
+
+
+            if (!article) {
+                return;
+            }
+
+
+            const counter =
+                article.querySelector(
+                    '[data-reply-counter]'
+                );
 
             const button =
                 article.querySelector(
-                    '[data-action="confirm-delete"]'
-                );
-
-            const buttonText =
-                article.querySelector(
-                    '[data-delete-text]'
-                );
-
-            const error =
-                article.querySelector(
-                    '[data-delete-error]'
+                    '[data-action="submit-reply"]'
                 );
 
 
-            if (
-                !url ||
-                !button ||
-                !buttonText
-            ) {
+            if (counter) {
+
+                counter.textContent =
+                    `${input.value.length} / 1000`;
+
+            }
+
+
+            if (button) {
+
+                button.disabled =
+                    input.value.trim().length < 2;
+
+            }
+
+        }
+    );
+
+
+    /* =========================================================
+       ÉDITION
+    ========================================================== */
+
+    function openEdit(article) {
+
+        const display =
+            article.querySelector(
+                '[data-comment-display]'
+            );
+
+        const edit =
+            article.querySelector(
+                '[data-comment-edit]'
+            );
+
+        const input =
+            article.querySelector(
+                '[data-edit-input]'
+            );
+
+
+        if (!display || !edit || !input) {
+            return;
+        }
+
+
+        display.classList.add(
+            'hidden'
+        );
+
+        edit.classList.remove(
+            'hidden'
+        );
+
+        input.focus();
+
+        input.setSelectionRange(
+            input.value.length,
+            input.value.length
+        );
+
+    }
+
+
+    function closeEdit(article) {
+
+        const display =
+            article.querySelector(
+                '[data-comment-display]'
+            );
+
+        const edit =
+            article.querySelector(
+                '[data-comment-edit]'
+            );
+
+        const input =
+            article.querySelector(
+                '[data-edit-input]'
+            );
+
+        const text =
+            article.querySelector(
+                '[data-comment-text]'
+            );
+
+        const errorBox =
+            article.querySelector(
+                '[data-edit-error]'
+            );
+
+
+        if (!display || !edit) {
+            return;
+        }
+
+
+        if (input && text) {
+
+            input.value =
+                text.textContent.trim();
+
+        }
+
+
+        hideError(
+            errorBox
+        );
+
+
+        edit.classList.add(
+            'hidden'
+        );
+
+        display.classList.remove(
+            'hidden'
+        );
+
+    }
+
+
+    async function saveEdit(article) {
+
+        const url =
+            article.dataset.updateUrl;
+
+        const input =
+            article.querySelector(
+                '[data-edit-input]'
+            );
+
+        const errorBox =
+            article.querySelector(
+                '[data-edit-error]'
+            );
+
+        const button =
+            article.querySelector(
+                '[data-action="save-edit"]'
+            );
+
+        const buttonText =
+            article.querySelector(
+                '[data-save-text]'
+            );
+
+        const text =
+            article.querySelector(
+                '[data-comment-text]'
+            );
+
+
+        if (!url || !input || !errorBox || !text) {
+            return;
+        }
+
+
+        hideError(
+            errorBox
+        );
+
+
+        const value =
+            input.value.trim();
+
+
+        if (value.length < 2) {
+
+            showError(
+                errorBox,
+                'Le contenu doit contenir au moins 2 caractères.'
+            );
+
+            return;
+        }
+
+
+        setLoading(
+            button,
+            buttonText,
+            true,
+            'Enregistrement...'
+        );
+
+
+        try {
+
+            const response = await fetch(
+                url,
+                {
+                    method: 'PUT',
+
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+
+                    body: JSON.stringify({
+                        content: value
+                    })
+                }
+            );
+
+
+            const data = await parseJson(
+                response
+            );
+
+
+            if (response.status === 422) {
+
+                showError(
+                    errorBox,
+                    data.errors?.content?.[0]
+                    ?? 'Le contenu est invalide.'
+                );
+
                 return;
             }
 
 
-            hideError(error);
+            if (response.status === 403) {
+
+                showError(
+                    errorBox,
+                    'Vous n’êtes pas autorisé à modifier ce contenu.'
+                );
+
+                return;
+            }
 
 
-            setButtonLoading(
-                button,
-                buttonText,
-                true,
-                'Suppression...'
+            if (!response.ok) {
+
+                throw new Error(
+                    data.message
+                    ?? 'Impossible de modifier le contenu.'
+                );
+            }
+
+
+            text.textContent =
+                data.comment.content;
+
+
+            closeEdit(
+                article
             );
 
 
-            try {
+        } catch (error) {
 
-                const response = await fetch(
-                    url,
-                    {
-                        method: 'DELETE',
+            console.error(error);
 
-                        headers: {
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': csrfToken,
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
+            showError(
+                errorBox,
+                error.message
+            );
+
+
+        } finally {
+
+            setLoading(
+                button,
+                buttonText,
+                false,
+                'Enregistrer'
+            );
+
+        }
+
+    }
+
+
+    /* =========================================================
+       SUPPRESSION
+    ========================================================== */
+
+    function openDelete(article) {
+
+        const display =
+            article.querySelector(
+                '[data-comment-display]'
+            );
+
+        const confirmation =
+            article.querySelector(
+                '[data-delete-confirm]'
+            );
+
+
+        if (!confirmation) {
+            return;
+        }
+
+
+        display?.classList.add(
+            'hidden'
+        );
+
+        confirmation.classList.remove(
+            'hidden'
+        );
+
+    }
+
+
+    function closeDelete(article) {
+
+        const display =
+            article.querySelector(
+                '[data-comment-display]'
+            );
+
+        const confirmation =
+            article.querySelector(
+                '[data-delete-confirm]'
+            );
+
+
+        confirmation?.classList.add(
+            'hidden'
+        );
+
+        display?.classList.remove(
+            'hidden'
+        );
+
+    }
+
+
+    async function deleteComment(article) {
+
+        const url =
+            article.dataset.deleteUrl;
+
+        const button =
+            article.querySelector(
+                '[data-action="confirm-delete"]'
+            );
+
+        const buttonText =
+            article.querySelector(
+                '[data-delete-text]'
+            );
+
+        const errorBox =
+            article.querySelector(
+                '[data-delete-error]'
+            );
+
+
+        if (!url || !button) {
+            return;
+        }
+
+
+        hideError(
+            errorBox
+        );
+
+
+        setLoading(
+            button,
+            buttonText,
+            true,
+            'Suppression...'
+        );
+
+
+        try {
+
+            const response = await fetch(
+                url,
+                {
+                    method: 'DELETE',
+
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
                     }
+                }
+            );
+
+
+            const data =
+                await parseJson(response);
+
+
+            if (response.status === 403) {
+
+                showError(
+                    errorBox,
+                    'Vous n’êtes pas autorisé à supprimer ce contenu.'
+                );
+
+                return;
+            }
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.message
+                    ?? 'Impossible de supprimer le contenu.'
+                );
+            }
+
+
+            const isReply =
+                article.classList.contains(
+                    'reply-item'
                 );
 
 
-                const data =
-                    await parseJson(response);
+            if (isReply) {
+
+                const repliesContainer =
+                    article.closest(
+                        '[data-replies-container]'
+                    );
 
 
-                if (response.status === 403) {
+                article.remove();
 
-                    throw new Error(
-                        'Vous n’êtes pas autorisé à supprimer ce commentaire.'
+
+                const parent =
+                    repliesContainer?.closest(
+                        '[data-comment-id]'
+                    );
+
+
+                if (parent) {
+
+                    updateRepliesCount(
+                        parent
                     );
 
                 }
 
 
-                if (!response.ok) {
+                if (
+                    repliesContainer &&
+                    repliesContainer.querySelectorAll(
+                        '.reply-item'
+                    ).length === 0
+                ) {
 
-                    throw new Error(
-                        data.message
-                        ?? 'Impossible de supprimer le commentaire.'
+                    repliesContainer.classList.add(
+                        'hidden'
                     );
+
+                    const toggleButton =
+                        parent?.querySelector(
+                            '[data-action="toggle-replies"]'
+                        );
+
+                    toggleButton?.remove();
 
                 }
 
+            } else {
 
                 article.remove();
 
@@ -2107,8 +967,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
                 if (
-                    data.comments_count === 0
-                    &&
+                    data.comments_count === 0 &&
                     !commentsList.querySelector(
                         '[data-comments-empty]'
                     )
@@ -2118,518 +977,1076 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 }
 
-            } catch (error) {
-
-                console.error(
-                    'Erreur suppression commentaire :',
-                    error
-                );
-
-
-                showError(
-                    error,
-                    error.message
-                    ?? 'Impossible de supprimer le commentaire.'
-                );
-
-            } finally {
-
-                setButtonLoading(
-                    button,
-                    buttonText,
-                    false,
-                    'Supprimer'
-                );
-
             }
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            showError(
+                errorBox,
+                error.message
+            );
+
+
+        } finally {
+
+            setLoading(
+                button,
+                buttonText,
+                false,
+                'Supprimer'
+            );
 
         }
 
+    }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Ajouter commentaire
-        |--------------------------------------------------------------------------
-        */
 
-        function addComment(comment) {
+    /* =========================================================
+       RÉPONSES
+    ========================================================== */
 
-            const emptyState =
-                commentsList.querySelector(
-                    '[data-comments-empty]'
+    function openReply(article) {
+
+        const form =
+            article.querySelector(
+                '[data-reply-form]'
+            );
+
+
+        if (!form) {
+            return;
+        }
+
+
+        form.classList.remove(
+            'hidden'
+        );
+
+
+        form.querySelector(
+            '[data-reply-input]'
+        )?.focus();
+
+    }
+
+
+    function closeReply(article) {
+
+        const form =
+            article.querySelector(
+                '[data-reply-form]'
+            );
+
+
+        if (!form) {
+            return;
+        }
+
+
+        const input =
+            form.querySelector(
+                '[data-reply-input]'
+            );
+
+        const errorBox =
+            form.querySelector(
+                '[data-reply-error]'
+            );
+
+
+        if (input) {
+            input.value = '';
+        }
+
+
+        hideError(
+            errorBox
+        );
+
+
+        form.classList.add(
+            'hidden'
+        );
+
+    }
+
+
+    async function submitReply(article) {
+
+        const url =
+            article.dataset.replyUrl;
+
+        const input =
+            article.querySelector(
+                '[data-reply-input]'
+            );
+
+        const errorBox =
+            article.querySelector(
+                '[data-reply-error]'
+            );
+
+        const button =
+            article.querySelector(
+                '[data-action="submit-reply"]'
+            );
+
+        const buttonText =
+            article.querySelector(
+                '[data-reply-submit-text]'
+            );
+
+
+        if (!url || !input) {
+            return;
+        }
+
+
+        const value =
+            input.value.trim();
+
+
+        hideError(
+            errorBox
+        );
+
+
+        if (value.length < 2) {
+
+            showError(
+                errorBox,
+                'Votre réponse doit contenir au moins 2 caractères.'
+            );
+
+            return;
+        }
+
+
+        setLoading(
+            button,
+            buttonText,
+            true,
+            'Publication...'
+        );
+
+
+        try {
+
+            const response = await fetch(
+                url,
+                {
+                    method: 'POST',
+
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+
+                    body: JSON.stringify({
+                        content: value
+                    })
+                }
+            );
+
+
+            const data =
+                await parseJson(response);
+
+
+            if (response.status === 422) {
+
+                showError(
+                    errorBox,
+                    data.errors?.content?.[0]
+                    ?? 'La réponse est invalide.'
                 );
 
-
-            if (emptyState) {
-                emptyState.remove();
+                return;
             }
 
 
-            const article =
-                document.createElement('article');
+            if (!response.ok) {
 
+                throw new Error(
+                    data.message
+                    ?? 'Impossible d’ajouter la réponse.'
+                );
+            }
 
-            article.dataset.commentId =
-                comment.id;
 
-            article.dataset.updateUrl =
-                `/comments/${comment.id}`;
+            addReply(
+                article,
+                data.reply
+            );
 
-            article.dataset.deleteUrl =
-                `/comments/${comment.id}`;
 
-            article.dataset.replyUrl =
-                `/comments/${comment.id}/replies`;
+            input.value = '';
 
-            article.className =
-                'comment-item px-6 py-5';
+            closeReply(
+                article
+            );
 
 
-            const initial =
-                comment.user.name
-                    .charAt(0)
-                    .toUpperCase();
+        } catch (error) {
 
+            console.error(error);
 
-            article.innerHTML = `
+            showError(
+                errorBox,
+                error.message
+            );
 
-                <div class="flex items-start gap-3">
 
-                    <div
-                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold text-gray-600"
-                    >
-                        ${escapeHtml(initial)}
-                    </div>
+        } finally {
 
+            setLoading(
+                button,
+                buttonText,
+                false,
+                'Répondre'
+            );
 
-                    <div class="min-w-0 flex-1">
+        }
 
-                        <div data-comment-display>
+    }
 
-                            <div class="flex items-start justify-between gap-3">
 
-                                <div>
+    /* =========================================================
+       AJOUTER UNE RÉPONSE
+    ========================================================== */
 
-                                    <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+    function addReply(article, reply) {
 
-                                        <span class="text-sm font-semibold text-gray-900">
-                                            ${escapeHtml(comment.user.name)}
-                                        </span>
+        let container =
+            article.querySelector(
+                '[data-replies-container]'
+            );
 
-                                        <span class="text-xs text-gray-400">
-                                            ${escapeHtml(comment.created_at)}
-                                        </span>
 
-                                    </div>
+        if (!container) {
 
-                                </div>
+            container =
+                document.createElement('div');
 
+            container.dataset.repliesContainer =
+                '';
 
-                                <div class="flex shrink-0 items-center gap-1">
+            container.className =
+                'mt-4 space-y-4 border-l-2 border-gray-100 pl-4';
 
-                                    <button
-                                        type="button"
-                                        data-action="edit"
-                                        class="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
-                                        title="Modifier"
-                                    >
-                                        ✏️
-                                    </button>
 
-                                    <button
-                                        type="button"
-                                        data-action="delete"
-                                        class="rounded-lg p-2 text-gray-400 transition hover:bg-red-50 hover:text-red-600"
-                                        title="Supprimer"
-                                    >
-                                        🗑️
-                                    </button>
+            const replyForm =
+                article.querySelector(
+                    '[data-reply-form]'
+                );
 
-                                </div>
 
-                            </div>
+            if (replyForm) {
 
+                replyForm.insertAdjacentElement(
+                    'afterend',
+                    container
+                );
 
-                            <p
-                                data-comment-text
-                                class="mt-2 whitespace-pre-line text-sm leading-6 text-gray-700"
-                            >
-                                ${escapeHtml(comment.content)}
-                            </p>
+            } else {
 
+                article.appendChild(
+                    container
+                );
 
-                            <div class="mt-3 flex items-center gap-4">
+            }
 
-                                <button
-                                    type="button"
-                                    data-action="reply"
-                                    class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition hover:text-gray-900"
-                                >
-                                    ↩ Répondre
-                                </button>
-
-                            </div>
 
-                        </div>
-
-
-                        <div
-                            data-comment-edit
-                            class="hidden"
-                        >
-
-                            <textarea
-                                data-edit-input
-                                maxlength="1000"
-                                rows="3"
-                                class="block w-full resize-none rounded-xl border-gray-300 text-sm shadow-sm focus:border-gray-900 focus:ring-gray-900"
-                            >${escapeHtml(comment.content)}</textarea>
-
-                            <div
-                                data-edit-error
-                                class="mt-2 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600"
-                            ></div>
-
-                            <div class="mt-3 flex justify-end gap-2">
-
-                                <button
-                                    type="button"
-                                    data-action="cancel-edit"
-                                    class="rounded-xl px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100"
-                                >
-                                    Annuler
-                                </button>
-
-                                <button
-                                    type="button"
-                                    data-action="save-edit"
-                                    class="rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white"
-                                >
-                                    <span data-save-text>
-                                        Enregistrer
-                                    </span>
-                                </button>
-
-                            </div>
-
-                        </div>
-
-
-                        <div
-                            data-delete-confirm
-                            class="mt-3 hidden rounded-xl border border-red-100 bg-red-50 p-4"
-                        >
-
-                            <p class="text-sm font-medium text-gray-900">
-                                Supprimer ce commentaire ?
-                            </p>
-
-                            <p class="mt-1 text-xs text-gray-500">
-                                Cette action est irréversible.
-                            </p>
-
-                            <div
-                                data-delete-error
-                                class="mt-2 hidden text-sm text-red-600"
-                            ></div>
-
-                            <div class="mt-3 flex justify-end gap-2">
-
-                                <button
-                                    type="button"
-                                    data-action="cancel-delete"
-                                    class="rounded-xl px-3 py-2 text-sm font-medium text-gray-600 hover:bg-white"
-                                >
-                                    Annuler
-                                </button>
-
-                                <button
-                                    type="button"
-                                    data-action="confirm-delete"
-                                    class="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white"
-                                >
-                                    <span data-delete-text>
-                                        Supprimer
-                                    </span>
-                                </button>
-
-                            </div>
-
-                        </div>
-
-
-                        <div
-                            data-reply-form
-                            class="mt-4 hidden"
-                        >
-
-                            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4">
-
-                                <div class="mb-3 text-xs font-medium text-gray-500">
-                                    Répondre à ${escapeHtml(comment.user.name)}
-                                </div>
-
-                                <textarea
-                                    data-reply-input
-                                    rows="3"
-                                    maxlength="1000"
-                                    placeholder="Écrivez votre réponse..."
-                                    class="block w-full resize-none rounded-xl border-gray-300 bg-white text-sm"
-                                ></textarea>
-
-                                <div
-                                    data-reply-error
-                                    class="mt-2 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600"
-                                ></div>
-
-                                <div class="mt-3 flex items-center justify-between">
-
-                                    <span
-                                        data-reply-counter
-                                        class="text-xs text-gray-400"
-                                    >
-                                        0 / 1000
-                                    </span>
-
-                                    <div class="flex gap-2">
-
-                                        <button
-                                            type="button"
-                                            data-action="cancel-reply"
-                                            class="rounded-xl px-3 py-2 text-sm text-gray-600 hover:bg-gray-100"
-                                        >
-                                            Annuler
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            data-action="submit-reply"
-                                            class="rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-                                            disabled
-                                        >
-                                            <span data-reply-submit-text>
-                                                Répondre
-                                            </span>
-                                        </button>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            `;
-
-
-            commentsList.prepend(
+            createRepliesToggle(
                 article
             );
 
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | État vide
-        |--------------------------------------------------------------------------
-        */
-
-        function showEmptyState() {
-
-            const emptyState =
-                document.createElement('div');
+        const replyArticle =
+            document.createElement('article');
 
 
-            emptyState.dataset.commentsEmpty =
-                '';
+        replyArticle.dataset.commentId =
+            reply.id;
+
+        replyArticle.dataset.replyId =
+            reply.id;
+
+        replyArticle.dataset.updateUrl =
+            updateUrlTemplate.replace(
+                '__COMMENT_ID__',
+                reply.id
+            );
+
+        replyArticle.dataset.deleteUrl =
+            deleteUrlTemplate.replace(
+                '__COMMENT_ID__',
+                reply.id
+            );
+
+        replyArticle.className =
+            'reply-item';
 
 
-            emptyState.className =
-                'px-6 py-10 text-center';
+        const initial =
+            reply.user.name
+                .charAt(0)
+                .toUpperCase();
 
 
-            emptyState.innerHTML = `
+        replyArticle.innerHTML = `
+
+            <div class="flex items-start gap-3">
 
                 <div
-                    class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100"
+                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-600"
                 >
-                    💬
+                    ${escapeHtml(initial)}
                 </div>
 
-                <p class="mt-3 text-sm font-medium text-gray-900">
-                    Aucun commentaire
-                </p>
 
-                <p class="mt-1 text-sm text-gray-500">
-                    Soyez le premier à participer à la discussion.
-                </p>
+                <div class="min-w-0 flex-1">
 
-            `;
+                    <div data-comment-display>
+
+                        <div class="flex items-start justify-between gap-3">
+
+                            <div>
+
+                                <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+
+                                    <span class="text-sm font-semibold text-gray-900">
+                                        ${escapeHtml(reply.user.name)}
+                                    </span>
+
+                                    <span class="text-xs text-gray-400">
+                                        ${escapeHtml(reply.created_at)}
+                                    </span>
+
+                                </div>
+
+                            </div>
 
 
-            commentsList.appendChild(
-                emptyState
-            );
+                            <div class="flex shrink-0 items-center gap-1">
 
+                                <button
+                                    type="button"
+                                    data-action="edit"
+                                    class="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
+                                    title="Modifier"
+                                >
+                                    ✏️
+                                </button>
+
+                                <button
+                                    type="button"
+                                    data-action="delete"
+                                    class="rounded-lg p-1.5 text-gray-400 transition hover:bg-red-50 hover:text-red-600"
+                                    title="Supprimer"
+                                >
+                                    🗑️
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        <p
+                            data-comment-text
+                            class="mt-1 whitespace-pre-line text-sm leading-6 text-gray-600"
+                        >
+                            ${escapeHtml(reply.content)}
+                        </p>
+
+                    </div>
+
+
+                    {{-- Formulaire édition dynamique --}}
+                    <div
+                        data-comment-edit
+                        class="hidden"
+                    >
+
+                        <textarea
+                            data-edit-input
+                            rows="3"
+                            maxlength="1000"
+                            class="w-full resize-none rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-700 outline-none transition focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
+                        >${escapeHtml(reply.content)}</textarea>
+
+
+                        <div
+                            data-edit-error
+                            class="mt-2 hidden text-sm text-red-600"
+                        ></div>
+
+
+                        <div class="mt-2 flex items-center justify-end gap-2">
+
+                            <button
+                                type="button"
+                                data-action="cancel-edit"
+                                class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100"
+                            >
+                                Annuler
+                            </button>
+
+                            <button
+                                type="button"
+                                data-action="save-edit"
+                                class="rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                <span data-save-text>
+                                    Enregistrer
+                                </span>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    {{-- Confirmation suppression dynamique --}}
+                    <div
+                        data-delete-confirm
+                        class="mt-3 hidden rounded-xl border border-red-100 bg-red-50 p-3"
+                    >
+
+                        <p class="text-sm text-red-700">
+                            Supprimer cette réponse ?
+                        </p>
+
+
+                        <div
+                            data-delete-error
+                            class="mt-2 hidden text-sm text-red-600"
+                        ></div>
+
+
+                        <div class="mt-3 flex justify-end gap-2">
+
+                            <button
+                                type="button"
+                                data-action="cancel-delete"
+                                class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-white"
+                            >
+                                Annuler
+                            </button>
+
+                            <button
+                                type="button"
+                                data-action="confirm-delete"
+                                class="rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                <span data-delete-text>
+                                    Supprimer
+                                </span>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        `;
+
+
+        container.appendChild(
+            replyArticle
+        );
+
+
+        container.classList.remove(
+            'hidden'
+        );
+
+
+        updateRepliesCount(
+            article
+        );
+
+    }
+
+
+    /* =========================================================
+       TOGGLE RÉPONSES
+    ========================================================== */
+
+    function createRepliesToggle(article) {
+
+        const actions =
+            article.querySelector(
+                '[data-action="reply"]'
+            )?.parentElement;
+
+
+        if (!actions) {
+            return;
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Compteur commentaires
-        |--------------------------------------------------------------------------
-        */
+        if (
+            actions.querySelector(
+                '[data-action="toggle-replies"]'
+            )
+        ) {
+            return;
+        }
 
-        function updateCommentsCount(count) {
 
-            commentsCount.textContent =
+        const button =
+            document.createElement('button');
+
+
+        button.type =
+            'button';
+
+        button.dataset.action =
+            'toggle-replies';
+
+        button.className =
+            'text-sm font-medium text-gray-500 transition hover:text-gray-900';
+
+        button.innerHTML = `
+            <span data-replies-count>0</span>
+            <span data-replies-label>réponse</span>
+        `;
+
+
+        actions.appendChild(
+            button
+        );
+
+    }
+
+
+    function toggleReplies(article) {
+
+        const container =
+            article.querySelector(
+                '[data-replies-container]'
+            );
+
+
+        if (!container) {
+            return;
+        }
+
+
+        container.classList.toggle(
+            'hidden'
+        );
+
+    }
+
+
+    function updateRepliesCount(article) {
+
+        const count =
+            article.querySelectorAll(
+                ':scope > div [data-replies-container] .reply-item'
+            ).length;
+
+
+        const countElement =
+            article.querySelector(
+                '[data-replies-count]'
+            );
+
+        const label =
+            article.querySelector(
+                '[data-replies-label]'
+            );
+
+
+        if (countElement) {
+
+            countElement.textContent =
                 count;
 
-            commentsLabel.textContent =
+        }
+
+
+        if (label) {
+
+            label.textContent =
                 count > 1
-                    ? 'commentaires'
-                    : 'commentaire';
+                    ? 'réponses'
+                    : 'réponse';
 
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Bouton loading
-        |--------------------------------------------------------------------------
-        */
-
-        function setButtonLoading(
-            button,
-            textElement,
-            loading,
-            text
-        ) {
-
-            if (!button || !textElement) {
-                return;
-            }
+    }
 
 
-            button.disabled =
-                loading;
+    /* =========================================================
+       AJOUTER COMMENTAIRE
+    ========================================================== */
 
-            textElement.textContent =
-                text;
+    function addComment(comment) {
 
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Erreur
-        |--------------------------------------------------------------------------
-        */
-
-        function showError(
-            element,
-            message
-        ) {
-
-            if (!element) {
-                return;
-            }
+        commentsList
+            .querySelector(
+                '[data-comments-empty]'
+            )
+            ?.remove();
 
 
-            /*
-             * Si le premier argument est une Error,
-             * on ne peut pas afficher directement l'erreur.
-             */
-
-            if (element instanceof Error) {
-                return;
-            }
+        const article =
+            document.createElement('article');
 
 
-            element.textContent =
-                message;
+        article.dataset.commentId =
+            comment.id;
 
-            element.classList.remove(
-                'hidden'
+        article.dataset.updateUrl =
+            updateUrlTemplate.replace(
+                '__COMMENT_ID__',
+                comment.id
             );
 
-        }
-
-
-        function hideError(element) {
-
-            if (!element) {
-                return;
-            }
-
-
-            element.textContent =
-                '';
-
-            element.classList.add(
-                'hidden'
+        article.dataset.deleteUrl =
+            deleteUrlTemplate.replace(
+                '__COMMENT_ID__',
+                comment.id
             );
 
+        article.dataset.replyUrl =
+            replyUrlTemplate.replace(
+                '__COMMENT_ID__',
+                comment.id
+            );
+
+        article.className =
+            'comment-item px-6 py-5';
+
+
+        const initial =
+            comment.user.name
+                .charAt(0)
+                .toUpperCase();
+
+
+        article.innerHTML = `
+
+            <div class="flex items-start gap-3">
+
+                <div
+                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold text-gray-600"
+                >
+                    ${escapeHtml(initial)}
+                </div>
+
+
+                <div class="min-w-0 flex-1">
+
+                    <div data-comment-display>
+
+                        <div class="flex items-start justify-between gap-3">
+
+                            <div>
+
+                                <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+
+                                    <span class="text-sm font-semibold text-gray-900">
+                                        ${escapeHtml(comment.user.name)}
+                                    </span>
+
+                                    <span class="text-xs text-gray-400">
+                                        ${escapeHtml(comment.created_at)}
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="flex items-center gap-1">
+
+                                <button
+                                    type="button"
+                                    data-action="edit"
+                                    class="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
+                                    title="Modifier"
+                                >
+                                    ✏️
+                                </button>
+
+                                <button
+                                    type="button"
+                                    data-action="delete"
+                                    class="rounded-lg p-2 text-gray-400 transition hover:bg-red-50 hover:text-red-600"
+                                    title="Supprimer"
+                                >
+                                    🗑️
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        <p
+                            data-comment-text
+                            class="mt-2 whitespace-pre-line text-sm leading-6 text-gray-700"
+                        >
+                            ${escapeHtml(comment.content)}
+                        </p>
+
+
+                        <div class="mt-3">
+
+                            <button
+                                type="button"
+                                data-action="reply"
+                                class="text-sm font-medium text-gray-500 transition hover:text-gray-900"
+                            >
+                                ↩ Répondre
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    {{-- Édition dynamique --}}
+                    <div
+                        data-comment-edit
+                        class="hidden"
+                    >
+
+                        <textarea
+                            data-edit-input
+                            rows="3"
+                            maxlength="1000"
+                            class="w-full resize-none rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-700 outline-none transition focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
+                        >${escapeHtml(comment.content)}</textarea>
+
+
+                        <div
+                            data-edit-error
+                            class="mt-2 hidden text-sm text-red-600"
+                        ></div>
+
+
+                        <div class="mt-2 flex items-center justify-end gap-2">
+
+                            <button
+                                type="button"
+                                data-action="cancel-edit"
+                                class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100"
+                            >
+                                Annuler
+                            </button>
+
+                            <button
+                                type="button"
+                                data-action="save-edit"
+                                class="rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                <span data-save-text>
+                                    Enregistrer
+                                </span>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    {{-- Confirmation suppression dynamique --}}
+                    <div
+                        data-delete-confirm
+                        class="mt-3 hidden rounded-xl border border-red-100 bg-red-50 p-3"
+                    >
+
+                        <p class="text-sm text-red-700">
+                            Supprimer ce commentaire ?
+                        </p>
+
+
+                        <div
+                            data-delete-error
+                            class="mt-2 hidden text-sm text-red-600"
+                        ></div>
+
+
+                        <div class="mt-3 flex justify-end gap-2">
+
+                            <button
+                                type="button"
+                                data-action="cancel-delete"
+                                class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-white"
+                            >
+                                Annuler
+                            </button>
+
+                            <button
+                                type="button"
+                                data-action="confirm-delete"
+                                class="rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                <span data-delete-text>
+                                    Supprimer
+                                </span>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    {{-- Réponse dynamique --}}
+                    <div
+                        data-reply-form
+                        class="mt-4 hidden"
+                    >
+
+                        <textarea
+                            data-reply-input
+                            rows="2"
+                            maxlength="1000"
+                            placeholder="Écrire une réponse..."
+                            class="w-full resize-none rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-700 outline-none transition focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
+                        ></textarea>
+
+
+                        <div class="mt-1 flex items-center justify-between">
+
+                            <div
+                                data-reply-error
+                                class="hidden text-sm text-red-600"
+                            ></div>
+
+                            <span
+                                data-reply-counter
+                                class="ml-auto text-xs text-gray-400"
+                            >
+                                0 / 1000
+                            </span>
+
+                        </div>
+
+
+                        <div class="mt-2 flex justify-end gap-2">
+
+                            <button
+                                type="button"
+                                data-action="cancel-reply"
+                                class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100"
+                            >
+                                Annuler
+                            </button>
+
+                            <button
+                                type="button"
+                                data-action="submit-reply"
+                                disabled
+                                class="rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                <span data-reply-submit-text>
+                                    Répondre
+                                </span>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        `;
+
+
+        commentsList.prepend(
+            article
+        );
+
+    }
+
+
+    /* =========================================================
+       COMPTEUR PRINCIPAL
+    ========================================================== */
+
+    function updateCommentsCount(count) {
+
+        commentsCount.textContent =
+            count;
+
+        commentsLabel.textContent =
+            count > 1
+                ? 'commentaires'
+                : 'commentaire';
+
+    }
+
+
+    /* =========================================================
+       ÉTAT VIDE
+    ========================================================== */
+
+    function showEmptyState() {
+
+        const empty =
+            document.createElement('div');
+
+
+        empty.dataset.commentsEmpty =
+            '';
+
+
+        empty.className =
+            'px-6 py-10 text-center';
+
+
+        empty.innerHTML = `
+
+            <div
+                class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100"
+            >
+                💬
+            </div>
+
+            <p class="mt-3 text-sm font-medium text-gray-900">
+                Aucun commentaire
+            </p>
+
+            <p class="mt-1 text-sm text-gray-500">
+                Soyez le premier à participer à la discussion.
+            </p>
+
+        `;
+
+
+        commentsList.appendChild(
+            empty
+        );
+
+    }
+
+
+    /* =========================================================
+       HELPERS
+    ========================================================== */
+
+    function setLoading(
+        button,
+        text,
+        loading,
+        label
+    ) {
+
+        if (!button) {
+            return;
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | JSON sécurisé
-        |--------------------------------------------------------------------------
-        */
-
-        async function parseJson(response) {
-
-            const text =
-                await response.text();
+        button.disabled =
+            loading;
 
 
-            if (!text) {
-                return {};
-            }
+        if (text) {
 
-
-            try {
-
-                return JSON.parse(text);
-
-            } catch {
-
-                return {};
-
-            }
+            text.textContent =
+                label;
 
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Protection XSS
-        |--------------------------------------------------------------------------
-        */
-
-        function escapeHtml(value) {
-
-            const div =
-                document.createElement('div');
+    }
 
 
-            div.textContent =
-                value ?? '';
+    function showError(
+        element,
+        message
+    ) {
+
+        if (!element) {
+            return;
+        }
 
 
-            return div.innerHTML;
+        element.textContent =
+            message ?? 'Une erreur est survenue.';
+
+
+        element.classList.remove(
+            'hidden'
+        );
+
+    }
+
+
+    function hideError(element) {
+
+        if (!element) {
+            return;
+        }
+
+
+        element.textContent =
+            '';
+
+        element.classList.add(
+            'hidden'
+        );
+
+    }
+
+
+    async function parseJson(response) {
+
+        const text =
+            await response.text();
+
+
+        if (!text) {
+            return {};
+        }
+
+
+        try {
+
+            return JSON.parse(text);
+
+        } catch {
+
+            return {};
 
         }
 
-    @endauth
+    }
+
+
+    function escapeHtml(value) {
+
+        const element =
+            document.createElement('div');
+
+
+        element.textContent =
+            value ?? '';
+
+
+        return element.innerHTML;
+
+    }
 
 });
 </script>
+
+@endauth
