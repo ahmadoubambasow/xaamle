@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LikeController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicPostController;
@@ -77,6 +78,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::delete('/posts/{post}', [PostController::class, 'destroy'])
         ->name('posts.destroy');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Likes
+    |--------------------------------------------------------------------------
+    */
+    Route::post('/posts/{post}/like', [LikeController::class, 'toggle'])
+        ->name('posts.like');
+    
 });
 
 
