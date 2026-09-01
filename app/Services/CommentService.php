@@ -42,4 +42,16 @@ class CommentService
     {
         $comment->delete();
     }
+
+    /**
+     * Création d'une réponse
+     */
+    public function createReply(User $user, Comment $parent, string $content): Comment
+    {
+        return $parent->replies()->create([
+            'user_id' => $user->id,
+            'post_id' => $parent->post_id,
+            'content' => trim($content),
+        ]);
+    }
 }

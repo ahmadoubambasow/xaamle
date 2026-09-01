@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCommentRequest;
+use App\Http\Requests\StoreReplyRequest;
 use App\Http\Requests\UpdateCommentRequest;
 use App\Models\Comment;
 use App\Models\Post;
@@ -111,6 +112,40 @@ class CommentController extends Controller
         return back()->with(
             'success',
             'Votre commentaire a été supprimé.'
+        );
+    }
+
+    /**
+     * Création d'une réponse
+     */
+    public function reply(StoreReplyRequest $request, Comment $comment): JsonResponse|RedirectResponse
+    {
+        $reply = $this->commentService->createReply(
+            $request->user(),
+            $comment,
+            $request->validated('content')
+        );
+
+        $reply->load('user');
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Votre réponse a été ajoutée.',
+                'reply' => [
+                    'id' => $reply->id,
+                    'content' => $reply->content,
+                    'created_at' => $reply->created_at->diffForHumans(),
+                    'user' => [
+                        'id' => $reply->user->id,
+                        'name' => $reply->user->name,
+                    ],
+                ],
+            ], 201);
+        }
+
+        return back()->with(
+            'success',
+            'Votre réponse a été ajoutée.'
         );
     }
 }

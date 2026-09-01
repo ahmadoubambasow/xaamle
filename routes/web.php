@@ -104,6 +104,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])
         ->name('comments.destroy');
     
+    Route::post('/comments/{comment}/replies', [CommentController::class, 'reply'])
+        ->name('comments.replies.store');
 });
 
 

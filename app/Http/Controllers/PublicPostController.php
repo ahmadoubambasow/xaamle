@@ -31,6 +31,7 @@ class PublicPostController extends Controller
         $post->load([
             'user',
             'comments.user',
+            'comments.replies.user',
         ]);
 
         return view('posts.show', compact('post'));
