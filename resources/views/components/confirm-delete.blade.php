@@ -4,33 +4,28 @@
     'buttonText' => 'Supprimer',
 ])
 
-<div
-    x-data="{ open: false }"
-    {{ $attributes }}
->
-    {{-- Bouton supprimer --}}
+<div {{ $attributes }}>
+
+    {{-- Bouton déclencheur --}}
     <button
         type="button"
-        @click="open = true"
+        data-confirm-delete-open
         class="inline-flex items-center rounded-lg px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50"
     >
         {{ $buttonText }}
     </button>
 
-    {{-- Overlay --}}
+
+    {{-- Modal --}}
     <div
-        x-show="open"
-        x-cloak
-        x-transition.opacity
-        class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 px-4"
-        @keydown.escape.window="open = false"
+        data-confirm-delete-modal
+        class="fixed inset-0 z-50 hidden items-center justify-center bg-gray-900/50 px-4"
+        role="dialog"
+        aria-modal="true"
+        aria-hidden="true"
     >
 
-        {{-- Modale --}}
         <div
-            x-show="open"
-            x-transition
-            @click.outside="open = false"
             class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl"
         >
 
@@ -39,6 +34,7 @@
 
                 {{-- Icône --}}
                 <div class="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+
                     <svg
                         class="h-6 w-6 text-red-600"
                         fill="none"
@@ -52,7 +48,9 @@
                             d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4a2 2 0 00-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"
                         />
                     </svg>
+
                 </div>
+
 
                 {{-- Texte --}}
                 <div class="mt-5">
@@ -73,14 +71,17 @@
             {{-- Actions --}}
             <div class="flex flex-col-reverse gap-3 border-t border-gray-100 bg-gray-50 px-6 py-4 sm:flex-row sm:justify-end">
 
+                {{-- Annuler --}}
                 <button
                     type="button"
-                    @click="open = false"
+                    data-confirm-delete-cancel
                     class="inline-flex justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
                 >
                     Annuler
                 </button>
 
+
+                {{-- Suppression --}}
                 {{ $slot }}
 
             </div>
@@ -88,4 +89,75 @@
         </div>
 
     </div>
+
 </div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    document.querySelectorAll('[data-confirm-delete-open]').forEach(function (openButton) {
+
+        const container = openButton.closest('[data-confirm-delete-modal]')
+            ? openButton.parentElement
+            : openButton.closest('div');
+
+        const modal = container.querySelector('[data-confirm-delete-modal]');
+
+        if (!modal) {
+            return;
+        }
+
+        const cancelButton = modal.querySelector('[data-confirm-delete-cancel]');
+
+
+        function openModal() {
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            modal.setAttribute('aria-hidden', 'false');
+
+            document.body.classList.add('overflow-hidden');
+
+        }
+
+
+        function closeModal() {
+
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+
+            modal.setAttribute('aria-hidden', 'true');
+
+            document.body.classList.remove('overflow-hidden');
+
+        }
+
+
+        openButton.addEventListener('click', openModal);
+
+        cancelButton.addEventListener('click', closeModal);
+
+
+        modal.addEventListener('click', function (event) {
+
+            if (event.target === modal) {
+                closeModal();
+            }
+
+        });
+
+
+        document.addEventListener('keydown', function (event) {
+
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+
+        });
+
+    });
+
+});
+</script>

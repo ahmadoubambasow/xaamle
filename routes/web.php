@@ -16,8 +16,8 @@ Route::get('/', [PublicPostController::class, 'index'])
     ->name('home');
 
 // Lecture d'une publication
-Route::get('/posts/{post}', [PostController::class, 'show'])
-    ->name('posts.show');
+Route::get('/articles/{post}', [PublicPostController::class, 'show'])
+    ->name('public.posts.show');
 
 
 /*

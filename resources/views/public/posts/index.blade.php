@@ -83,7 +83,7 @@
                                 @if ($post->cover_image)
 
                                     <a
-                                        href="{{ route('posts.show', $post) }}"
+                                        href="{{ route('public.posts.show', $post) }}"
                                         class="block h-52 overflow-hidden"
                                     >
                                         <img
@@ -122,7 +122,7 @@
                                     <h3 class="mt-3 text-xl font-bold leading-tight text-gray-900">
 
                                         <a
-                                            href="{{ route('posts.show', $post) }}"
+                                            href="{{ route('public.posts.show', $post) }}"
                                             class="transition hover:text-gray-600"
                                         >
                                             {{ $post->title }}
@@ -164,7 +164,7 @@
 
                                     {{-- Lire --}}
                                     <a
-                                        href="{{ route('posts.show', $post) }}"
+                                        href="{{ route('public.posts.show', $post) }}"
                                         class="mt-5 inline-flex items-center text-sm font-semibold text-gray-900 transition group-hover:text-gray-500"
                                     >
                                         Lire l'article

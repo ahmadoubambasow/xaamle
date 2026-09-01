@@ -22,4 +22,16 @@ class PublicPostController extends Controller
         
         return view ('public.posts.index', compact('posts'));
     }
+
+    /**
+     * Afficher une publication publiée.
+     */
+    public function show(Post $post): View
+    {
+        
+
+        return view('posts.show', [
+            'post' => $post->load('user'),
+        ]);
+    }
 }

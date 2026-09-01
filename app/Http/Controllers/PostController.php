@@ -17,7 +17,7 @@ class PostController extends Controller
     ) {}
 
     /**
-     * Liste des publications
+     * Liste des publications de l'utilisateur.
      */
     public function index(): View
     {
@@ -30,7 +30,7 @@ class PostController extends Controller
     }
 
     /**
-     * Formulaire de création
+     * Formulaire de création.
      */
     public function create(): View
     {
@@ -48,24 +48,12 @@ class PostController extends Controller
         );
 
         return redirect()
-            ->route('posts.show', $post)
+            ->route('public.posts.show', $post)
             ->with('success', 'Publication créée avec succès.');
     }
 
     /**
-     * Afficher une publication.
-     */
-    public function show(Post $post): View
-    {
-        Gate::authorize('view', $post);
-
-        return view('posts.show', [
-            'post' => $post->load('user'),
-        ]);
-    }
-
-    /**
-     * Formulaire de modification
+     * Formulaire de modification.
      */
     public function edit(Post $post): View
     {
@@ -89,7 +77,7 @@ class PostController extends Controller
         );
 
         return redirect()
-            ->route('posts.show', $post)
+            ->route('public.posts.show', $post)
             ->with('success', 'Publication mise à jour avec succès.');
     }
 
