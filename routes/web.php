@@ -2,23 +2,63 @@
 
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicPostController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+/*
+|--------------------------------------------------------------------------
+| Routes publiques
+|--------------------------------------------------------------------------
+*/
 
+// Accueil — feed public Xaamlé
+Route::get('/', [PublicPostController::class, 'index'])
+    ->name('home');
+
+// Lecture d'une publication
 Route::get('/posts/{post}', [PostController::class, 'show'])
     ->name('posts.show');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+
+/*
+|--------------------------------------------------------------------------
+| Routes authentifiées
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tableau de bord
+    |--------------------------------------------------------------------------
+    */
+
+    Route::view('/dashboard', 'dashboard')
+        ->name('dashboard');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Profil
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/profile', [ProfileController::class, 'edit'])
+        ->name('profile.edit');
+
+    Route::patch('/profile', [ProfileController::class, 'update'])
+        ->name('profile.update');
+
+    Route::delete('/profile', [ProfileController::class, 'destroy'])
+        ->name('profile.destroy');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mes publications
+    |--------------------------------------------------------------------------
+    */
 
     Route::get('/posts', [PostController::class, 'index'])
         ->name('posts.index');
@@ -38,5 +78,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/posts/{post}', [PostController::class, 'destroy'])
         ->name('posts.destroy');
 });
+
+
+/*
+|--------------------------------------------------------------------------
+| Authentification
+|--------------------------------------------------------------------------
+*/
 
 require __DIR__.'/auth.php';

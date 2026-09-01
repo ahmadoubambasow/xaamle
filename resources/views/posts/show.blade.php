@@ -1,25 +1,4 @@
-<x-app-layout>
-
-    <x-slot name="header">
-        <div class="flex items-center justify-between gap-4">
-            <div>
-                <p class="text-sm text-gray-500">
-                    Publication
-                </p>
-
-                <h2 class="text-xl font-semibold text-gray-800">
-                    {{ $post->title }}
-                </h2>
-            </div>
-
-            <a
-                href="{{ route('posts.index') }}"
-                class="hidden rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 sm:inline-flex"
-            >
-                ← Mes publications
-            </a>
-        </div>
-    </x-slot>
+<x-layouts.public>
 
     <main class="min-h-screen bg-gray-50 py-10">
 
@@ -252,4 +231,4 @@
 
     @endif
 
-</x-app-layout>
+</x-layouts.public>
