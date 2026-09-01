@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Notifications\ResetPasswordNotification;
 use App\Notifications\VerifyEmailNotification;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -58,6 +59,21 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         $this->notify(new VerifyEmailNotification());
     }
+
+    /**
+     * Envoyer l'e-mail personnalisé de réinitialisation.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        \Log::info('RESET PASSWORD NOTIFICATION APPELEE', [
+        'email' => $this->email,
+        'token' => $token,
+    ]);
+        $this->notify(
+            new ResetPasswordNotification($token)
+        );
+    }
+    
 
     /**
      * Publicaton de l'utilisateur
