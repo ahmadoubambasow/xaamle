@@ -40,10 +40,18 @@ class Comment extends Model
     }
 
     /**
-     * Reponses au commentaire
+     * Reponses du commentaire
      */
     public function replies(): HasMany
     {
         return $this->hasMany(Comment::class, 'parent_id');
+    }
+
+    /**
+     * Likes du commentaire
+     */
+    public function likes(): HasMany
+    {
+        return $this->hasMany(CommentLike::class);
     }
 }

@@ -6,6 +6,7 @@
     data-update-url-template="{{ route('comments.update', ['comment' => '__COMMENT_ID__']) }}"
     data-delete-url-template="{{ route('comments.destroy', ['comment' => '__COMMENT_ID__']) }}"
     data-reply-url-template="{{ route('comments.replies.store', ['comment' => '__COMMENT_ID__']) }}"
+    data-like-url-template="{{ route('comments.likes.toggle', ['comment' => '__COMMENT_ID__']) }}"
     class="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
 >
 
@@ -21,11 +22,13 @@
         class="flex w-full items-center justify-between px-6 py-5 text-left transition hover:bg-gray-50"
     >
         <div>
+
             <h2 class="text-lg font-semibold text-gray-900">
                 Commentaires
             </h2>
 
             <p class="mt-1 text-sm text-gray-500">
+
                 <span id="comments-count">
                     {{ $post->comments->count() }}
                 </span>
@@ -36,7 +39,9 @@
                         : 'commentaire'
                     }}
                 </span>
+
             </p>
+
         </div>
 
         <span
@@ -58,6 +63,7 @@
                 />
             </svg>
         </span>
+
     </button>
 
 
@@ -69,10 +75,12 @@
         id="comments-content"
         class="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-in-out"
     >
+
         <div class="min-h-0 overflow-hidden">
 
             {{-- Formulaire principal --}}
             <x-comments.form :post="$post" />
+
 
             {{-- Liste des commentaires --}}
             <div
@@ -92,6 +100,7 @@
                         data-comments-empty
                         class="px-6 py-10 text-center"
                     >
+
                         <div
                             class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100"
                         >
@@ -105,6 +114,7 @@
                         <p class="mt-1 text-sm text-gray-500">
                             Soyez le premier à participer à la discussion.
                         </p>
+
                     </div>
 
                 @endforelse
@@ -112,6 +122,7 @@
             </div>
 
         </div>
+
     </div>
 
 </section>
@@ -163,6 +174,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const replyUrlTemplate =
         section.dataset.replyUrlTemplate;
+
+    const likeUrlTemplate =
+        section.dataset.likeUrlTemplate;
 
 
     /* =========================================================
@@ -221,6 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
             icon.classList.add(
                 'rotate-180'
             );
+
         }
 
     });
@@ -406,6 +421,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             switch (action) {
 
+                case 'like':
+                    await toggleLike(button);
+                    break;
+
                 case 'edit':
                     openEdit(article);
                     break;
@@ -509,6 +528,177 @@ document.addEventListener('DOMContentLoaded', () => {
 
         }
     );
+
+
+    /* =========================================================
+       LIKE
+    ========================================================== */
+
+    async function toggleLike(button) {
+
+        const url =
+            button.dataset.likeUrl;
+
+        const countElement =
+            button.querySelector(
+                '[data-like-count]'
+            );
+
+        const icon =
+            button.querySelector(
+                '[data-like-icon]'
+            );
+
+        const errorElement =
+            button.parentElement?.querySelector(
+                '[data-like-error]'
+            );
+
+
+        if (!url) {
+            return;
+        }
+
+
+        button.disabled = true;
+
+
+        hideError(
+            errorElement
+        );
+
+
+        try {
+
+            const response = await fetch(
+                url,
+                {
+                    method: 'POST',
+
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                }
+            );
+
+
+            const data =
+                await parseJson(response);
+
+
+            if (response.status === 401) {
+
+                throw new Error(
+                    'Vous devez être connecté pour aimer ce commentaire.'
+                );
+            }
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.message
+                    ?? 'Impossible de modifier le like.'
+                );
+            }
+
+
+            const liked =
+                Boolean(data.liked);
+
+
+            /*
+             * État du bouton
+             */
+            button.dataset.liked =
+                liked ? 'true' : 'false';
+
+            button.setAttribute(
+                'aria-pressed',
+                liked ? 'true' : 'false'
+            );
+
+
+            /*
+             * Nombre de likes
+             */
+            if (countElement) {
+
+                countElement.textContent =
+                    data.likes_count;
+            }
+
+
+            /*
+             * Nettoyage des classes
+             */
+            button.classList.remove(
+                'text-red-600',
+                'hover:bg-red-50',
+                'text-gray-500',
+                'hover:bg-gray-100',
+                'hover:text-red-600'
+            );
+
+
+            /*
+             * État visuel
+             */
+            if (liked) {
+
+                button.classList.add(
+                    'text-red-600',
+                    'hover:bg-red-50'
+                );
+
+            } else {
+
+                button.classList.add(
+                    'text-gray-500',
+                    'hover:bg-gray-100',
+                    'hover:text-red-600'
+                );
+
+            }
+
+
+            /*
+             * Coeur rempli / vide
+             */
+            if (icon) {
+
+                icon.setAttribute(
+                    'fill',
+                    liked
+                        ? 'currentColor'
+                        : 'none'
+                );
+
+            }
+
+
+        } catch (error) {
+
+            console.error(
+                'Like error:',
+                error
+            );
+
+            showError(
+                errorElement,
+                error.message
+            );
+
+
+        } finally {
+
+            button.disabled = false;
+
+        }
+
+    }
 
 
     /* =========================================================
@@ -947,14 +1137,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         'hidden'
                     );
 
+
                     const toggleButton =
                         parent?.querySelector(
                             '[data-action="toggle-replies"]'
                         );
 
+
                     toggleButton?.remove();
 
                 }
+
 
             } else {
 
@@ -1187,6 +1380,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             input.value = '';
 
+
             closeReply(
                 article
             );
@@ -1279,17 +1473,20 @@ document.addEventListener('DOMContentLoaded', () => {
         replyArticle.dataset.replyId =
             reply.id;
 
+
         replyArticle.dataset.updateUrl =
             updateUrlTemplate.replace(
                 '__COMMENT_ID__',
                 reply.id
             );
 
+
         replyArticle.dataset.deleteUrl =
             deleteUrlTemplate.replace(
                 '__COMMENT_ID__',
                 reply.id
             );
+
 
         replyArticle.className =
             'reply-item';
@@ -1366,6 +1563,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         >
                             ${escapeHtml(reply.content)}
                         </p>
+
+
+                        {{-- LIKE RÉPONSE DYNAMIQUE --}}
+                        ${likeButtonHtml(reply.id, 0, false)}
 
                     </div>
 
@@ -1513,11 +1714,14 @@ document.addEventListener('DOMContentLoaded', () => {
         button.type =
             'button';
 
+
         button.dataset.action =
             'toggle-replies';
 
+
         button.className =
             'text-sm font-medium text-gray-500 transition hover:text-gray-900';
+
 
         button.innerHTML = `
             <span data-replies-count>0</span>
@@ -1592,6 +1796,81 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     /* =========================================================
+       BOUTON LIKE DYNAMIQUE
+    ========================================================== */
+
+    function likeButtonHtml(
+        commentId,
+        likesCount = 0,
+        liked = false
+    ) {
+
+        const likeUrl =
+            likeUrlTemplate.replace(
+                '__COMMENT_ID__',
+                commentId
+            );
+
+
+        return `
+
+            <div class="relative mt-2 inline-flex items-center">
+
+                <button
+                    type="button"
+                    data-action="like"
+                    data-like-url="${escapeHtml(likeUrl)}"
+                    data-liked="${liked ? 'true' : 'false'}"
+                    aria-pressed="${liked ? 'true' : 'false'}"
+                    class="group inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium transition
+                        ${liked
+                            ? 'text-red-600 hover:bg-red-50'
+                            : 'text-gray-500 hover:bg-gray-100 hover:text-red-600'
+                        }"
+                >
+
+                    <svg
+                        data-like-icon
+                        class="h-4 w-4 transition-transform duration-200 group-active:scale-75"
+                        viewBox="0 0 24 24"
+                        fill="${liked ? 'currentColor' : 'none'}"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"
+                        />
+                    </svg>
+
+                    <span>
+                        J'aime
+                    </span>
+
+                    <span
+                        data-like-count
+                        class="min-w-[1rem] text-center"
+                    >
+                        ${likesCount}
+                    </span>
+
+                </button>
+
+
+                <span
+                    data-like-error
+                    class="absolute left-0 top-full z-10 mt-1 hidden whitespace-nowrap text-xs text-red-500"
+                ></span>
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* =========================================================
        AJOUTER COMMENTAIRE
     ========================================================== */
 
@@ -1611,11 +1890,13 @@ document.addEventListener('DOMContentLoaded', () => {
         article.dataset.commentId =
             comment.id;
 
+
         article.dataset.updateUrl =
             updateUrlTemplate.replace(
                 '__COMMENT_ID__',
                 comment.id
             );
+
 
         article.dataset.deleteUrl =
             deleteUrlTemplate.replace(
@@ -1623,11 +1904,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 comment.id
             );
 
+
         article.dataset.replyUrl =
             replyUrlTemplate.replace(
                 '__COMMENT_ID__',
                 comment.id
             );
+
 
         article.className =
             'comment-item px-6 py-5';
@@ -1706,12 +1989,22 @@ document.addEventListener('DOMContentLoaded', () => {
                         </p>
 
 
-                        <div class="mt-3">
+                        {{-- ACTIONS --}}
+                        <div class="mt-3 flex flex-wrap items-center gap-2">
 
+                            {{-- LIKE --}}
+                            ${likeButtonHtml(
+                                comment.id,
+                                comment.likes_count ?? 0,
+                                comment.liked ?? false
+                            )}
+
+
+                            {{-- RÉPONDRE --}}
                             <button
                                 type="button"
                                 data-action="reply"
-                                class="text-sm font-medium text-gray-500 transition hover:text-gray-900"
+                                class="rounded-lg px-2 py-1.5 text-sm font-medium text-gray-500 transition hover:bg-gray-100 hover:text-gray-900"
                             >
                                 ↩ Répondre
                             </button>
@@ -1887,6 +2180,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         commentsCount.textContent =
             count;
+
 
         commentsLabel.textContent =
             count > 1

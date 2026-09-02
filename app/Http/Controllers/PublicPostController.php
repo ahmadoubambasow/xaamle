@@ -32,6 +32,7 @@ class PublicPostController extends Controller
             'user',
             'comments.user',
             'comments.replies.user',
+            'comments.replies.likes',
         ]);
 
         return view('posts.show', compact('post'));

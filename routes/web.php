@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\CommentLikeController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
@@ -89,6 +90,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/posts/{post}/like', [LikeController::class, 'toggle'])
         ->name('posts.like');
 
+    Route::post('/comments/{comment}/like', [CommentLikeController::class, 'toggle'])
+        ->name('comments.likes.toggle');
 
     /*
     |--------------------------------------------------------------------------

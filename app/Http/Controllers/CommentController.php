@@ -47,6 +47,8 @@ class CommentController extends Controller
                         'id' => $comment->user->id,
                         'name' => $comment->user->name,
                     ],
+                    'likes_count' => 0,
+                    'liked' => false,
                 ],
                 'comments_count' => $post->comments()->count(),
             ], 201);
