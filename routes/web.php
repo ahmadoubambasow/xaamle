@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthorFollowController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\CommentLikeController;
 use App\Http\Controllers\LikeController;
@@ -109,6 +110,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::post('/comments/{comment}/replies', [CommentController::class, 'reply'])
         ->name('comments.replies.store');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Suivre des auteurs
+    |--------------------------------------------------------------------------
+    */
+    Route::post('/authors/{author}/follow', [AuthorFollowController::class, 'toggle'])
+        ->name('authors.follow.toggle');
 });
 
 

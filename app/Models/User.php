@@ -103,4 +103,37 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(CommentLike::class);
     }
     
+    /**
+     * Les auteurs que cet utilisateur suit
+     */
+    public function following(): HasMany
+    {
+        return $this->hasMany(AuthorFollow::class, 'follower_id');
+    }
+
+    /**
+     * es utilisateurs qui suivent cet auteur
+     */
+    public function followers(): HasMany
+    {
+        return $this->hasMany(AuthorFollow::class, 'author_id');
+    }
+
+    /**
+     * Est-ce que cet utilisateur suit cet auteur
+     */
+    public function isFollowing(User $author): bool
+    {
+        return $this->following()
+            ->where('author_id', $author->id)
+            ->exists();
+    }
+
+    /**
+     * Le nombre de personnes qui suivent cet utilisateur
+     */
+    public function followersCount(): int
+    {
+        return $this->followers()->count();
+    }
 }

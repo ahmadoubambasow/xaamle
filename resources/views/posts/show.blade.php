@@ -86,22 +86,32 @@
 
 
             {{-- Auteur --}}
-            <div class="mt-7 flex items-center gap-3 border-t border-gray-100 pt-6">
+            <div class="mt-7 flex items-center justify-between gap-4 border-t border-gray-100 pt-6">
 
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-900 text-sm font-semibold text-white">
-                    {{ strtoupper(substr($post->user->name, 0, 1)) }}
+                {{-- Informations auteur --}}
+                <div class="flex min-w-0 items-center gap-3">
+
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-900 text-sm font-semibold text-white">
+                        {{ strtoupper(substr($post->user->name, 0, 1)) }}
+                    </div>
+
+                    <div class="min-w-0">
+
+                        <p class="truncate text-sm font-semibold text-gray-900">
+                            {{ $post->user->name }}
+                        </p>
+
+                        <p class="text-xs text-gray-400">
+                            Auteur
+                        </p>
+
+                    </div>
+
                 </div>
 
-                <div>
-
-                    <p class="text-sm font-semibold text-gray-900">
-                        {{ $post->user->name }}
-                    </p>
-
-                    <p class="text-xs text-gray-400">
-                        Auteur
-                    </p>
-
+                {{-- Suivi --}}
+                <div class="shrink-0">
+                    <x-authors.follow-button :author="$post->user" />
                 </div>
 
             </div>
