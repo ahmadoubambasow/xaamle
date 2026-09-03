@@ -183,6 +183,20 @@
 
                                     </div>
 
+                                    <div class="mt-4 flex items-center gap-4 text-sm text-gray-500">
+
+                                        <span class="inline-flex items-center gap-1.5">
+                                            <span>❤️</span>
+                                            {{ $post->likes->count() }} like (s)
+                                        </span>
+
+                                        <span class="inline-flex items-center gap-1.5">
+                                            <span>💬</span>
+                                            {{ $post->comments->count() }} commentaire (s)
+                                        </span>
+
+                                    </div>
+
 
                                     {{-- Actions --}}
                                     <div class="mt-6 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-5">
