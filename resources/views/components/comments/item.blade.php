@@ -18,10 +18,24 @@
     <div class="flex items-start gap-3">
 
         {{-- Avatar --}}
-        <div
-            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold text-gray-600"
-        >
-            {{ strtoupper(substr($comment->user->name, 0, 1)) }}
+        <div class="h-10 w-10 shrink-0 overflow-hidden rounded-full">
+
+            @if ($comment->user->avatar)
+
+                <img
+                    src="{{ asset('storage/' . $comment->user->avatar) }}"
+                    alt="Photo de {{ $comment->user->name }}"
+                    class="h-full w-full object-cover"
+                >
+
+            @else
+
+                <div class="flex h-full w-full items-center justify-center bg-gray-100 text-sm font-semibold text-gray-600">
+                    {{ strtoupper(substr($comment->user->name, 0, 1)) }}
+                </div>
+
+            @endif
+
         </div>
 
 

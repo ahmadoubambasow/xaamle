@@ -18,10 +18,24 @@
     <div class="flex items-start gap-3">
 
         {{-- Avatar --}}
-        <div
-            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-600"
-        >
-            {{ strtoupper(substr($reply->user->name, 0, 1)) }}
+        <div class="h-8 w-8 shrink-0 overflow-hidden rounded-full">
+
+            @if ($reply->user->avatar)
+
+                <img
+                    src="{{ asset('storage/' . $reply->user->avatar) }}"
+                    alt="Photo de {{ $reply->user->name }}"
+                    class="h-full w-full object-cover"
+                >
+
+            @else
+
+                <div class="flex h-full w-full items-center justify-center bg-gray-100 text-xs font-semibold text-gray-600">
+                    {{ strtoupper(substr($reply->user->name, 0, 1)) }}
+                </div>
+
+            @endif
+
         </div>
 
 

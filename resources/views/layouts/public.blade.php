@@ -188,11 +188,24 @@
                             >
 
                                 {{-- Avatar --}}
+                                <div class="h-9 w-9 shrink-0 overflow-hidden rounded-full">
 
-                                <div
-                                    class="flex h-9 w-9 items-center justify-center rounded-full bg-gray-900 text-sm font-semibold text-white"
-                                >
-                                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                                    @if (auth()->user()->avatar)
+
+                                        <img
+                                            src="{{ asset('storage/' . auth()->user()->avatar) }}"
+                                            alt="Photo de {{ auth()->user()->name }}"
+                                            class="h-full w-full object-cover"
+                                        >
+
+                                    @else
+
+                                        <div class="flex h-full w-full items-center justify-center bg-gray-900 text-sm font-semibold text-white">
+                                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                                        </div>
+
+                                    @endif
+
                                 </div>
 
 
@@ -523,10 +536,25 @@
                                 class="flex items-center gap-3 rounded-lg px-4 py-3 text-sm text-gray-600 hover:bg-gray-50"
                             >
 
-                                <div
-                                    class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-900 text-xs font-semibold text-white"
-                                >
-                                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                                {{-- Avatar --}}
+                                <div class="h-8 w-8 shrink-0 overflow-hidden rounded-full">
+
+                                    @if (auth()->user()->avatar)
+
+                                        <img
+                                            src="{{ asset('storage/' . auth()->user()->avatar) }}"
+                                            alt="Photo de {{ auth()->user()->name }}"
+                                            class="h-full w-full object-cover"
+                                        >
+
+                                    @else
+
+                                        <div class="flex h-full w-full items-center justify-center bg-gray-900 text-xs font-semibold text-white">
+                                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                                        </div>
+
+                                    @endif
+
                                 </div>
 
                                 <div>

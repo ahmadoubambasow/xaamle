@@ -11,10 +11,25 @@
 
         <div class="mb-3 flex items-center gap-2">
 
-            <div
-                class="flex h-7 w-7 items-center justify-center rounded-full bg-gray-900 text-[10px] font-semibold text-white"
-            >
-                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+            {{-- Avatar --}}
+            <div class="h-7 w-7 shrink-0 overflow-hidden rounded-full">
+
+                @if (auth()->user()->avatar)
+
+                    <img
+                        src="{{ asset('storage/' . auth()->user()->avatar) }}"
+                        alt="Photo de {{ auth()->user()->name }}"
+                        class="h-full w-full object-cover"
+                    >
+
+                @else
+
+                    <div class="flex h-full w-full items-center justify-center bg-gray-900 text-[10px] font-semibold text-white">
+                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                    </div>
+
+                @endif
+
             </div>
 
             <span class="text-xs font-medium text-gray-500">

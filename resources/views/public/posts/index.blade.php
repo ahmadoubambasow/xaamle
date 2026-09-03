@@ -140,13 +140,31 @@
                                     @endif
 
 
-                                    {{-- Auteur --}}
+                                   {{-- Auteur --}}
                                     <div class="mt-auto flex items-center gap-3 border-t border-gray-100 pt-5">
 
-                                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-900 text-xs font-semibold text-white">
-                                            {{ strtoupper(substr($post->user->name, 0, 1)) }}
+                                        {{-- Avatar --}}
+                                        <div class="h-9 w-9 shrink-0 overflow-hidden rounded-full">
+
+                                            @if ($post->user->avatar)
+
+                                                <img
+                                                    src="{{ asset('storage/' . $post->user->avatar) }}"
+                                                    alt="Photo de {{ $post->user->name }}"
+                                                    class="h-full w-full object-cover"
+                                                >
+
+                                            @else
+
+                                                <div class="flex h-full w-full items-center justify-center bg-gray-900 text-xs font-semibold text-white">
+                                                    {{ strtoupper(substr($post->user->name, 0, 1)) }}
+                                                </div>
+
+                                            @endif
+
                                         </div>
 
+                                        {{-- Informations auteur --}}
                                         <div class="min-w-0">
 
                                             <p class="truncate text-sm font-semibold text-gray-900">
