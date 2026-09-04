@@ -18,6 +18,14 @@
         {{ config('app.name', 'Xaamlé') }}
     </title>
 
+    <meta
+        name="description"
+        content="Xaamlé — Faire savoir, partager et échanger."
+    >
+
+    <link rel="icon" type="image/ico" href="{{ asset('favicon.ico') }}?v=2">
+
+
     {{-- Font --}}
     <link rel="preconnect" href="https://fonts.bunny.net">
 

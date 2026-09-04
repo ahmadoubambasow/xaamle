@@ -22,6 +22,9 @@
         content="{{ $description ?? 'Xaamlé — Une communauté pour partager des idées, des connaissances et des expériences.' }}"
     >
 
+    <link rel="icon" type="image/ico" href="{{ asset('favicon.ico') }}?v=2">
+
+
     {{-- Tailwind CDN --}}
     <script src="https://cdn.tailwindcss.com"></script>
 
