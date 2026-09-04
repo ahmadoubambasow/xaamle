@@ -31,7 +31,7 @@
         enctype="multipart/form-data"
         class="mt-6 space-y-7"
         x-data="{
-            avatarPreview: '{{ $user->avatar ? asset('storage/' . $user->avatar) : '' }}',
+            avatarPreview: '',
             bioLength: {{ strlen(old('bio', $user->bio ?? '')) }}
         }"
     >
@@ -56,7 +56,7 @@
                 {{-- Aperçu avatar --}}
                 <div class="relative h-20 w-20 shrink-0 overflow-hidden rounded-full">
 
-                    {{-- Image --}}
+                    {{-- Nouvelle photo sélectionnée --}}
                     <template x-if="avatarPreview">
 
                         <img
@@ -68,14 +68,33 @@
                     </template>
 
 
-                    {{-- Avatar par défaut --}}
-                    <template x-if="!avatarPreview">
+                    {{-- Photo existante --}}
+                    @if ($user->avatar)
 
-                        <div class="flex h-full w-full items-center justify-center bg-gray-900 text-2xl font-semibold text-white">
+                        <div
+                            x-show="!avatarPreview"
+                            class="h-full w-full"
+                        >
+
+                            <x-cloudinary::image
+                                public-id="{{ $user->avatar }}"
+                                alt="Photo de profil de {{ $user->name }}"
+                                class="h-full w-full object-cover"
+                            />
+
+                        </div>
+
+                    @else
+
+                        {{-- Avatar par défaut --}}
+                        <div
+                            x-show="!avatarPreview"
+                            class="flex h-full w-full items-center justify-center bg-gray-900 text-2xl font-semibold text-white"
+                        >
                             {{ strtoupper(substr($user->name, 0, 1)) }}
                         </div>
 
-                    </template>
+                    @endif
 
                 </div>
 
@@ -112,7 +131,6 @@
                 </div>
 
             </div>
-
 
             <x-input-error
                 class="mt-2"

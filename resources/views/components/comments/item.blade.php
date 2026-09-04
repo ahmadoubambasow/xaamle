@@ -22,15 +22,17 @@
 
             @if ($comment->user->avatar)
 
-                <img
-                    src="{{ asset('storage/' . $comment->user->avatar) }}"
+                <x-cloudinary::image
+                    public-id="{{ $comment->user->avatar }}"
                     alt="Photo de {{ $comment->user->name }}"
                     class="h-full w-full object-cover"
-                >
+                />
 
             @else
 
-                <div class="flex h-full w-full items-center justify-center bg-gray-100 text-sm font-semibold text-gray-600">
+                <div
+                    class="flex h-full w-full items-center justify-center bg-gray-900 text-sm font-semibold text-white"
+                >
                     {{ strtoupper(substr($comment->user->name, 0, 1)) }}
                 </div>
 

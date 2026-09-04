@@ -18,11 +18,11 @@
 
                 @if (auth()->user()->avatar)
 
-                    <img
-                        src="{{ asset('storage/' . auth()->user()->avatar) }}"
-                        alt="Photo de {{ auth()->user()->name }}"
+                    <x-cloudinary::image
+                        public-id="{{ $post->user->avatar }}"
+                        alt="Photo de {{ $post->user->name }}"
                         class="h-full w-full object-cover"
-                    >
+                    />
 
                 @else
 

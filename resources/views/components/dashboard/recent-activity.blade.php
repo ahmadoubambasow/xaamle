@@ -21,11 +21,11 @@
 
                     @if ($activity['user']->avatar)
 
-                        <img
-                            src="{{ asset('storage/' . $activity['user']->avatar) }}"
-                            alt="{{ $activity['user']->name }}"
+                        <x-cloudinary::image
+                            public-id="{{ $activity['user']->avatar }}"
+                            alt="Photo de {{ $activity['user']->name }}"
                             class="h-full w-full object-cover"
-                        >
+                        />
 
                     @else
 

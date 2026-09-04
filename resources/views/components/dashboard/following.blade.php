@@ -101,11 +101,11 @@
 
                                 @if ($author->avatar)
 
-                                    <img
-                                        src="{{ asset('storage/' . $author->avatar) }}"
+                                    <x-cloudinary::image
+                                        public-id="{{ $author->avatar }}"
                                         alt="Photo de {{ $author->name }}"
                                         class="h-full w-full object-cover"
-                                    >
+                                    />
 
                                 @else
 

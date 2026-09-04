@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -48,14 +49,27 @@ class ProfileController extends Controller
          */
         if ($request->hasFile('avatar')) {
 
-            // Supprimer l'ancien avatar s'il existe
+            // Supprimer l'ancien avatar de Cloudinary s'il existe
             if ($user->avatar) {
-                Storage::disk('public')->delete($user->avatar);
+                try {
+                    Cloudinary::uploadApi()->destroy(
+                        $user->avatar
+                    );
+                } catch (\Throwable $e) {
+                    // On ne bloque pas la mise à jour si l'ancien fichier n'est plus disponible
+                }
             }
 
-            // Enregistrer le nouvel avatar
-            $data['avatar'] = $request->file('avatar')
-                ->store('avatars', 'public');
+            // Envoyer le nouvel avatar vers Cloudinary
+            $result = Cloudinary::uploadApi()->upload(
+                $request->file('avatar')->getRealPath(),
+                [
+                    'folder' => 'xaamle/avatars',
+                ]
+            );
+
+            // On conserve le public_id dans la base
+            $data['avatar'] = $result['public_id'];
         }
 
         /*

@@ -24,11 +24,11 @@
 
                 @if ($post->user->avatar)
 
-                    <img
-                        src="{{ asset('storage/' . $post->user->avatar) }}"
+                    <x-cloudinary::image
+                        public-id="{{ $post->user->avatar }}"
                         alt="{{ $post->user->name }}"
                         class="h-full w-full object-cover"
-                    >
+                    />
 
                 @else
 
