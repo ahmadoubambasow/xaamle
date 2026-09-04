@@ -103,19 +103,23 @@
                                 @if ($post->cover_image)
 
                                     <div class="h-56 w-full shrink-0 md:h-auto md:w-56">
-                                        <img
-                                            src="{{ asset('storage/' . $post->cover_image) }}"
+
+                                        <x-cloudinary::image
+                                            public-id="{{ $post->cover_image }}"
                                             alt="{{ $post->title }}"
                                             class="h-full w-full object-cover"
-                                        >
+                                        />
+
                                     </div>
 
                                 @else
 
                                     <div class="flex h-40 w-full shrink-0 items-center justify-center bg-gray-100 md:h-auto md:w-56">
+
                                         <span class="text-4xl text-gray-300">
                                             📝
                                         </span>
+
                                     </div>
 
                                 @endif

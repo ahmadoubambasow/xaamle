@@ -113,11 +113,11 @@
 
     @if (isset($post) && $post->cover_image)
         <div class="mb-4 overflow-hidden rounded-xl border border-gray-200">
-            <img
-                src="{{ asset('storage/' . $post->cover_image) }}"
+            <x-cloudinary::image
+                public-id="{{ $post->cover_image }}"
                 alt="{{ $post->title }}"
-                class="h-56 w-full object-cover"
-            >
+                class="h-full w-full object-cover"
+            />
         </div>
     @endif
 

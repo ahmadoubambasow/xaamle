@@ -34,11 +34,11 @@
 
             <div class="h-64 w-full sm:h-80 lg:h-96">
 
-                <img
-                    src="{{ asset('storage/' . $post->cover_image) }}"
+                <x-cloudinary::image
+                    public-id="{{ $post->cover_image }}"
                     alt="{{ $post->title }}"
                     class="h-full w-full object-cover"
-                >
+                />
 
             </div>
 

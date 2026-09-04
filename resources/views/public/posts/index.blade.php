@@ -86,11 +86,11 @@
                                         href="{{ route('public.posts.show', $post) }}"
                                         class="block h-52 overflow-hidden"
                                     >
-                                        <img
-                                            src="{{ asset('storage/' . $post->cover_image) }}"
+                                        <x-cloudinary::image
+                                            public-id="{{ $post->cover_image }}"
                                             alt="{{ $post->title }}"
-                                            class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                                        >
+                                            class="h-full w-full object-cover"
+                                        />
                                     </a>
 
                                 @else

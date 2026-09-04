@@ -14,7 +14,7 @@
             </div>
 
             <a
-                href="{{ route('posts.show', $post) }}"
+                href="{{ route('posts.index', $post) }}"
                 class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
             >
                 ← Retour à la publication
@@ -107,7 +107,7 @@
                 <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
 
                     <a
-                        href="{{ route('posts.show', $post) }}"
+                        href="{{ route('posts.index', $post) }}"
                         class="inline-flex justify-center rounded-xl border border-gray-300 bg-white px-6 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
                     >
                         Annuler
