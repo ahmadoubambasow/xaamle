@@ -1,8 +1,13 @@
 <x-app-layout>
 
+    {{-- =========================================================
+         HEADER
+    ========================================================== --}}
+
     <x-slot name="header">
 
         <div>
+
             <h2 class="text-xl font-semibold tracking-tight text-gray-900">
                 Tableau de bord
             </h2>
@@ -10,20 +15,36 @@
             <p class="mt-1 text-sm text-gray-500">
                 Votre activité sur Xaamlé.
             </p>
+
         </div>
 
     </x-slot>
 
 
+
+    {{-- =========================================================
+         CONTENU
+    ========================================================== --}}
+
     <div class="min-h-screen bg-gray-50 py-8 sm:py-10">
 
         <div class="mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8">
 
-            {{-- Bienvenue --}}
-            <x-dashboard.welcome :user="$user" />
+
+            {{-- =====================================================
+                 BIENVENUE
+            ====================================================== --}}
+
+            <x-dashboard.welcome
+                :user="$user"
+            />
 
 
-            {{-- Statistiques --}}
+
+            {{-- =====================================================
+                 STATISTIQUES
+            ====================================================== --}}
+
             <section>
 
                 <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -57,11 +78,22 @@
             </section>
 
 
-            {{-- Actions + activité --}}
+
+            {{-- =====================================================
+                 ACTIONS + ACTIVITÉ
+            ====================================================== --}}
+
             <section class="grid gap-6 lg:grid-cols-3">
 
-                <x-dashboard.quick-actions />
+                {{-- Actions rapides --}}
+                <div>
 
+                    <x-dashboard.quick-actions />
+
+                </div>
+
+
+                {{-- Activité récente --}}
                 <div class="lg:col-span-2">
 
                     <x-dashboard.recent-activity
@@ -73,19 +105,50 @@
             </section>
 
 
-            {{-- Mes publications --}}
-            <x-dashboard.latest-posts
-                :posts="$latestPosts"
-            />
+
+            {{-- =====================================================
+                 MES PUBLICATIONS + COMPTES SUIVIS
+            ====================================================== --}}
+
+            <section class="grid gap-6 lg:grid-cols-3">
+
+                {{-- Mes publications --}}
+                <div class="lg:col-span-2">
+
+                    <x-dashboard.latest-posts
+                        :posts="$latestPosts"
+                    />
+
+                </div>
 
 
-            {{-- Découvrir --}}
+                {{-- Comptes suivis --}}
+                <div>
+
+                    <x-dashboard.following
+                        :following="$following"
+                    />
+
+                </div>
+
+            </section>
+
+
+
+            {{-- =====================================================
+                 DÉCOUVRIR
+            ====================================================== --}}
+
             <x-dashboard.discover
                 :posts="$discoverPosts"
             />
 
 
-            {{-- CTA --}}
+
+            {{-- =====================================================
+                 CTA
+            ====================================================== --}}
+
             <x-dashboard.cta />
 
         </div>

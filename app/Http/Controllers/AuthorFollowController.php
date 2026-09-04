@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuthorFollow;
 use App\Models\User;
 use App\Services\AuthorFollowService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 use InvalidArgumentException;
 
 class AuthorFollowController extends Controller
@@ -13,6 +15,32 @@ class AuthorFollowController extends Controller
     public function __construct(
         private readonly AuthorFollowService $followService
     ) {}
+
+    /**
+     * Afficher tous les comptes suivis par l'utilisateur.
+     */
+    public function index(Request $request): View
+    {
+        $following = AuthorFollow::query()
+            ->where('follower_id', $request->user()->id)
+            ->with([
+                'author' => function ($query) {
+                    $query->withCount([
+                        'posts' => function ($query) {
+                            $query->where('status', 'published');
+                        },
+                        'followers',
+                    ]);
+                },
+            ])
+            ->latest()
+            ->paginate(12);
+
+        return view('authors.following', [
+            'following' => $following,
+        ]);
+    }
+
 
     /**
      * Suivre / ne plus suivre un auteur
@@ -39,4 +67,5 @@ class AuthorFollowController extends Controller
             ],422);
         }
     }
+
 }

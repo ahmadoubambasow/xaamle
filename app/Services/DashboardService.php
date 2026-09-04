@@ -22,6 +22,7 @@ class DashboardService
             'latestPosts' => $this->getLatestPosts($user),
             'discoverPosts' => $this->getDiscoverPosts($user),
             'activities' => $this->getRecentActivities($user),
+            'following' => $this->getFollowing($user),
         ];
     }
 
@@ -186,5 +187,34 @@ class DashboardService
                 'date' => $follow->created_at,
             ]);
         }
+    }
+
+    /**
+     * Abonnements.
+     */
+    protected function getFollowing(User $user): array
+    {
+        $total = $user->following()->count();
+
+        $authors = $user->following()
+            ->with([
+                'author' => function ($query) {
+                    $query->withCount([
+                        'posts' => function ($query) {
+                            $query->where('status', 'published');
+                        },
+                        'followers',
+                    ]);
+                },
+            ])
+            ->latest()
+            ->take(5)
+            ->get()
+            ->pluck('author');
+
+        return [
+            'authors' => $authors,
+            'total' => $total,
+        ];
     }
 }
