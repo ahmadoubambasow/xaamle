@@ -7,6 +7,7 @@ use App\Http\Requests\StoreReplyRequest;
 use App\Http\Requests\UpdateCommentRequest;
 use App\Models\Comment;
 use App\Models\Post;
+use App\Notifications\PostCommented;
 use App\Services\CommentService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
@@ -28,29 +29,53 @@ class CommentController extends Controller
         Post $post
     ): JsonResponse|RedirectResponse {
 
+        $user = $request->user();
+
         $comment = $this->commentService->create(
-            $request->user(),
+            $user,
             $post,
             $request->validated('content')
         );
 
+        /*
+        * Charger les relations nécessaires à la notification
+        * et à la réponse JSON.
+        */
+        $comment->load('user');
+
+        /*
+        * Notification à l'auteur de la publication.
+        *
+        * On ne notifie pas l'auteur s'il commente
+        * lui-même sa propre publication.
+        */
+        if ($post->user_id !== $user->id) {
+            $post->user->notify(
+                new PostCommented($comment)
+            );
+        }
+
         if ($request->expectsJson()) {
-            $comment->load('user');
 
             return response()->json([
                 'message' => 'Votre commentaire a été ajouté.',
+
                 'comment' => [
                     'id' => $comment->id,
                     'content' => $comment->content,
                     'created_at' => $comment->created_at->diffForHumans(),
+
                     'user' => [
                         'id' => $comment->user->id,
                         'name' => $comment->user->name,
                     ],
+
                     'likes_count' => 0,
                     'liked' => false,
                 ],
+
                 'comments_count' => $post->comments()->count(),
+
             ], 201);
         }
 

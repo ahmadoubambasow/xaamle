@@ -6,6 +6,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\CommentLikeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LikeController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicPostController;
@@ -49,6 +50,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/mes-abonnements', [AuthorFollowController::class, 'index'])
         ->name('authors.following');
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Notifications
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/notifications', [NotificationController::class, 'index'])
+        ->name('notifications.index');
+
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])
+        ->name('notifications.read');
+
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])
+        ->name('notifications.read-all');
 
     /*
     |--------------------------------------------------------------------------

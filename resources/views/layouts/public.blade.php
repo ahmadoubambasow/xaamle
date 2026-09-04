@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
@@ -47,9 +48,35 @@
         src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
     ></script>
 
+    {{-- Alpine : éviter le flash des éléments x-cloak --}}
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+
+    {{-- ========================================================= --}}
+    {{-- DONNÉES DE NAVIGATION --}}
+    {{-- ========================================================= --}}
+
+    @auth
+        @php
+            $unreadNotificationsCount = auth()->user()
+                ->unreadNotifications()
+                ->count();
+
+            $latestNotifications = auth()->user()
+                ->notifications()
+                ->latest()
+                ->take(5)
+                ->get();
+        @endphp
+    @endauth
+
     @stack('head')
 
 </head>
+
 
 <body class="min-h-screen bg-gray-50 font-sans text-gray-900 antialiased">
 
@@ -58,7 +85,10 @@
     {{-- ========================================================= --}}
 
     <header
-        x-data="{ open: false, userMenu: false }"
+        x-data="{
+            open: false,
+            userMenu: false
+        }"
         class="sticky top-0 z-40 border-b border-gray-200 bg-white/95 backdrop-blur"
     >
 
@@ -117,14 +147,16 @@
                             ? 'text-gray-900'
                             : 'text-gray-500 hover:text-gray-900' }}"
                     >
+
                         Accueil
 
-                        @if (request()->routeIs('home') || request()->routeIs('public.posts.*'))
-
+                        @if (
+                            request()->routeIs('home') ||
+                            request()->routeIs('public.posts.*')
+                        )
                             <span
                                 class="absolute inset-x-0 -bottom-1 h-0.5 rounded-full bg-gray-900"
                             ></span>
-
                         @endif
 
                     </a>
@@ -141,14 +173,13 @@
                                 ? 'text-gray-900'
                                 : 'text-gray-500 hover:text-gray-900' }}"
                         >
+
                             Mes publications
 
                             @if (request()->routeIs('posts.*'))
-
                                 <span
                                     class="absolute inset-x-0 -bottom-1 h-0.5 rounded-full bg-gray-900"
                                 ></span>
-
                             @endif
 
                         </a>
@@ -176,7 +207,299 @@
 
                     @auth
 
-                        {{-- Dropdown utilisateur --}}
+                        {{-- ========================================= --}}
+                        {{-- NOTIFICATIONS --}}
+                        {{-- ========================================= --}}
+
+                        <div
+                            x-data="{ openNotifications: false }"
+                            class="relative mr-2"
+                        >
+
+                            {{-- Bouton cloche --}}
+
+                            <button
+                                type="button"
+                                @click="openNotifications = !openNotifications"
+                                @click.outside="openNotifications = false"
+                                class="relative flex h-10 w-10 items-center justify-center rounded-xl text-gray-500 transition hover:bg-gray-100 hover:text-gray-900"
+                                aria-label="Notifications"
+                                :aria-expanded="openNotifications.toString()"
+                            >
+
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="h-5 w-5"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="M14.857 17.082a23.848 23.848 0 0 1-5.714 0A2.5 2.5 0 0 1 7 14.6V11a5 5 0 0 1 10 0v3.6a2.5 2.5 0 0 1-2.143 2.482ZM9.5 19a3 3 0 0 0 5 0"
+                                    />
+                                </svg>
+
+
+                                {{-- Badge notifications non lues --}}
+
+                                @if ($unreadNotificationsCount > 0)
+
+                                    <span
+                                        class="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-bold text-white ring-2 ring-white"
+                                    >
+                                        {{ $unreadNotificationsCount > 99 ? '99+' : $unreadNotificationsCount }}
+                                    </span>
+
+                                @endif
+
+                            </button>
+
+
+                            {{-- ========================================= --}}
+                            {{-- DROPDOWN NOTIFICATIONS --}}
+                            {{-- ========================================= --}}
+
+                            <div
+                                x-show="openNotifications"
+                                x-cloak
+                                x-transition:enter="transition ease-out duration-150"
+                                x-transition:enter-start="opacity-0 scale-95"
+                                x-transition:enter-end="opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-100"
+                                x-transition:leave-start="opacity-100 scale-100"
+                                x-transition:leave-end="opacity-0 scale-95"
+                                class="absolute right-0 z-50 mt-3 w-80 origin-top-right overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl"
+                            >
+
+                                {{-- En-tête --}}
+
+                                <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+
+                                    <div>
+
+                                        <h3 class="text-sm font-semibold text-gray-900">
+                                            Notifications
+                                        </h3>
+
+                                        @if ($unreadNotificationsCount > 0)
+
+                                            <p class="mt-0.5 text-xs text-gray-500">
+                                                {{ $unreadNotificationsCount }}
+                                                {{ $unreadNotificationsCount > 1 ? 'non lues' : 'non lue' }}
+                                            </p>
+
+                                        @else
+
+                                            <p class="mt-0.5 text-xs text-gray-500">
+                                                Tout est à jour
+                                            </p>
+
+                                        @endif
+
+                                    </div>
+
+
+                                    {{-- Tout lire --}}
+
+                                    @if ($unreadNotificationsCount > 0)
+
+                                        <form
+                                            method="POST"
+                                            action="{{ route('notifications.read-all') }}"
+                                        >
+
+                                            @csrf
+
+                                            <button
+                                                type="submit"
+                                                class="text-xs font-semibold text-gray-500 transition hover:text-gray-900"
+                                            >
+                                                Tout lire
+                                            </button>
+
+                                        </form>
+
+                                    @endif
+
+                                </div>
+
+
+                                {{-- Liste des notifications --}}
+
+                                <div class="max-h-[380px] overflow-y-auto">
+
+                                    @forelse ($latestNotifications as $notification)
+
+                                        @php
+                                            $data = $notification->data;
+                                            $isUnread = is_null($notification->read_at);
+                                            $type = $data['type'] ?? null;
+                                        @endphp
+
+                                        <div
+                                            class="border-b border-gray-100 last:border-b-0
+                                            {{ $isUnread ? 'bg-gray-50' : 'bg-white' }}"
+                                        >
+
+                                            <form
+                                                method="POST"
+                                                action="{{ route('notifications.read', $notification->id) }}"
+                                            >
+
+                                                @csrf
+
+                                                <button
+                                                    type="submit"
+                                                    class="flex w-full items-start gap-3 px-4 py-3 text-left transition hover:bg-gray-50"
+                                                >
+
+                                                    {{-- Icône --}}
+
+                                                    <div
+                                                        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full
+                                                        {{ $type === 'post_liked'
+                                                            ? 'bg-red-50'
+                                                            : 'bg-blue-50' }}"
+                                                    >
+
+                                                        @if ($type === 'post_liked')
+
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                class="h-4 w-4 text-red-500"
+                                                                viewBox="0 0 24 24"
+                                                                fill="currentColor"
+                                                            >
+                                                                <path
+                                                                    d="M12 21s-7.5-4.35-9.33-8.15C1.22 9.82 3.03 5.5 7.2 5.5c2.08 0 3.62 1.16 4.8 2.57C13.18 6.66 14.72 5.5 16.8 5.5c4.17 0 5.98 4.32 4.53 7.35C19.5 16.65 12 21 12 21Z"
+                                                                />
+                                                            </svg>
+
+                                                        @else
+
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                class="h-4 w-4 text-blue-600"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                stroke="currentColor"
+                                                                stroke-width="1.8"
+                                                            >
+                                                                <path
+                                                                    stroke-linecap="round"
+                                                                    stroke-linejoin="round"
+                                                                    d="M21 11.5a8.38 8.38 0 0 1-9 8.5 8.5 8.5 0 0 1-4.36-1.2L3 20l1.2-4.64A8.5 8.5 0 1 1 21 11.5Z"
+                                                                />
+                                                            </svg>
+
+                                                        @endif
+
+                                                    </div>
+
+
+                                                    {{-- Contenu --}}
+
+                                                    <div class="min-w-0 flex-1">
+
+                                                        <p class="text-xs leading-5 text-gray-700">
+                                                            {{ $data['message'] ?? 'Nouvelle notification.' }}
+                                                        </p>
+
+                                                        @if (!empty($data['post_title']))
+
+                                                            <p class="mt-0.5 truncate text-xs font-semibold text-gray-900">
+                                                                {{ $data['post_title'] }}
+                                                            </p>
+
+                                                        @endif
+
+                                                        <p class="mt-1 text-[11px] text-gray-400">
+                                                            {{ $notification->created_at->diffForHumans() }}
+                                                        </p>
+
+                                                    </div>
+
+
+                                                    {{-- Point notification non lue --}}
+
+                                                    @if ($isUnread)
+
+                                                        <span
+                                                            class="mt-2 h-2 w-2 shrink-0 rounded-full bg-gray-900"
+                                                        ></span>
+
+                                                    @endif
+
+                                                </button>
+
+                                            </form>
+
+                                        </div>
+
+                                    @empty
+
+                                        <div class="px-5 py-10 text-center">
+
+                                            <div
+                                                class="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-gray-100"
+                                            >
+
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    class="h-5 w-5 text-gray-400"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                    stroke-width="1.8"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        d="M14.857 17.082a23.848 23.848 0 0 1-5.714 0A2.5 2.5 0 0 1 7 14.6V11a5 5 0 0 1 10 0v3.6a2.5 2.5 0 0 1-2.143 2.482ZM9.5 19a3 3 0 0 0 5 0"
+                                                    />
+                                                </svg>
+
+                                            </div>
+
+                                            <p class="mt-3 text-sm font-semibold text-gray-900">
+                                                Aucune notification
+                                            </p>
+
+                                            <p class="mt-1 text-xs leading-5 text-gray-500">
+                                                Les likes et commentaires apparaîtront ici.
+                                            </p>
+
+                                        </div>
+
+                                    @endforelse
+
+                                </div>
+
+
+                                {{-- Footer --}}
+
+                                <div class="border-t border-gray-100 bg-gray-50 px-4 py-3 text-center">
+
+                                    <a
+                                        href="{{ route('notifications.index') }}"
+                                        class="text-xs font-semibold text-gray-700 transition hover:text-gray-900"
+                                    >
+                                        Voir toutes les notifications →
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        {{-- ========================================= --}}
+                        {{-- DROPDOWN UTILISATEUR --}}
+                        {{-- ========================================= --}}
 
                         <div class="relative">
 
@@ -188,6 +511,7 @@
                             >
 
                                 {{-- Avatar --}}
+
                                 <div class="h-9 w-9 shrink-0 overflow-hidden rounded-full">
 
                                     @if (auth()->user()->avatar)
@@ -200,7 +524,9 @@
 
                                     @else
 
-                                        <div class="flex h-full w-full items-center justify-center bg-gray-900 text-sm font-semibold text-white">
+                                        <div
+                                            class="flex h-full w-full items-center justify-center bg-gray-900 text-sm font-semibold text-white"
+                                        >
                                             {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                                         </div>
 
@@ -296,6 +622,47 @@
                                 @endif
 
 
+                                {{-- Notifications --}}
+
+                                <a
+                                    href="{{ route('notifications.index') }}"
+                                    class="flex items-center justify-between px-4 py-2.5 text-sm text-gray-700 transition hover:bg-gray-50"
+                                >
+
+                                    <div class="flex items-center gap-3">
+
+                                        <svg
+                                            class="h-4 w-4 text-gray-400"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke-width="1.5"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M14.857 17.082a23.848 23.848 0 0 1-5.714 0A2.5 2.5 0 0 1 7 14.6V11a5 5 0 0 1 10 0v3.6a2.5 2.5 0 0 1-2.143 2.482ZM9.5 19a3 3 0 0 0 5 0"
+                                            />
+                                        </svg>
+
+                                        Notifications
+
+                                    </div>
+
+                                    @if ($unreadNotificationsCount > 0)
+
+                                        <span
+                                            class="flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white"
+                                        >
+                                            {{ $unreadNotificationsCount > 99 ? '99+' : $unreadNotificationsCount }}
+                                        </span>
+
+                                    @endif
+
+                                </a>
+
+
                                 {{-- Mes publications --}}
 
                                 <a
@@ -358,6 +725,7 @@
                                     method="POST"
                                     action="{{ route('logout') }}"
                                 >
+
                                     @csrf
 
                                     <button
@@ -512,6 +880,62 @@
                         </a>
 
 
+                        {{-- Notifications --}}
+
+                        <a
+                            href="{{ route('notifications.index') }}"
+                            class="flex items-center justify-between rounded-lg px-4 py-3 text-sm font-medium
+                            {{ request()->routeIs('notifications.*')
+                                ? 'bg-gray-100 text-gray-900'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}"
+                        >
+
+                            <div class="flex items-center gap-3">
+
+                                <div
+                                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl
+                                    {{ request()->routeIs('notifications.*')
+                                        ? 'bg-gray-900 text-white'
+                                        : 'bg-gray-100 text-gray-600' }}"
+                                >
+
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="h-5 w-5"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        stroke-width="1.8"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            d="M14.857 17.082a23.848 23.848 0 0 1-5.714 0A2.5 2.5 0 0 1 7 14.6V11a5 5 0 0 1 10 0v3.6a2.5 2.5 0 0 1-2.143 2.482ZM9.5 19a3 3 0 0 0 5 0"
+                                        />
+                                    </svg>
+
+                                </div>
+
+                                <span>
+                                    Notifications
+                                </span>
+
+                            </div>
+
+
+                            @if ($unreadNotificationsCount > 0)
+
+                                <span
+                                    class="flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white"
+                                >
+                                    {{ $unreadNotificationsCount > 99 ? '99+' : $unreadNotificationsCount }}
+                                </span>
+
+                            @endif
+
+                        </a>
+
+
                         {{-- Écrire --}}
 
                         <a
@@ -537,6 +961,7 @@
                             >
 
                                 {{-- Avatar --}}
+
                                 <div class="h-8 w-8 shrink-0 overflow-hidden rounded-full">
 
                                     @if (auth()->user()->avatar)
@@ -549,13 +974,16 @@
 
                                     @else
 
-                                        <div class="flex h-full w-full items-center justify-center bg-gray-900 text-xs font-semibold text-white">
+                                        <div
+                                            class="flex h-full w-full items-center justify-center bg-gray-900 text-xs font-semibold text-white"
+                                        >
                                             {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                                         </div>
 
                                     @endif
 
                                 </div>
+
 
                                 <div>
 
@@ -580,6 +1008,7 @@
                             method="POST"
                             action="{{ route('logout') }}"
                         >
+
                             @csrf
 
                             <button
@@ -656,7 +1085,9 @@
 
 
                 <div class="text-sm text-gray-400">
+
                     © {{ date('Y') }} Xaamlé
+
                 </div>
 
             </div>
@@ -671,4 +1102,3 @@
 </body>
 
 </html>
-
