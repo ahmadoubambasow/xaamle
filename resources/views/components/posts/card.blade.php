@@ -10,11 +10,15 @@
         <a href="{{ route('public.posts.show', $post) }}">
             <div class="aspect-[16/9] overflow-hidden bg-gray-100">
 
-                <img
-                    src="{{ asset('storage/' . $post->cover_image) }}"
-                    alt="{{ $post->title }}"
-                    class="h-full w-full object-cover transition duration-300 hover:scale-105"
-                >
+                @if ($post->cover_image)
+
+                    <x-cloudinary::image
+                        public-id="{{ $post->cover_image }}"
+                        alt="{{ $post->title }}"
+                        class="h-full w-full object-cover transition duration-300 hover:scale-105"
+                    />
+
+                @endif
 
             </div>
         </a>

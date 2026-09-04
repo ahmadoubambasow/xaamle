@@ -6,11 +6,11 @@
 
         <div class="aspect-[16/9] overflow-hidden bg-gray-100">
 
-            <img
-                src="{{ asset('storage/' . $post->cover_image) }}"
+            <x-cloudinary::image
+                public-id="{{ $post->cover_image }}"
                 alt="{{ $post->title }}"
                 class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-            >
+            />
 
         </div>
 
@@ -22,27 +22,36 @@
 
             <div class="h-7 w-7 shrink-0 overflow-hidden rounded-full">
 
-                @if ($post->user->avatar)
+                <a
+                    href="{{ route('authors.show', $post->user) }}"
+                    class="block h-full w-full"
+                    aria-label="Voir le profil de {{ $post->user->name }}"
+                >
+                    @if ($post->user->avatar)
 
-                    <x-cloudinary::image
-                        public-id="{{ $post->user->avatar }}"
-                        alt="{{ $post->user->name }}"
-                        class="h-full w-full object-cover"
-                    />
+                        <x-cloudinary::image
+                            public-id="{{ $post->user->avatar }}"
+                            alt="{{ $post->user->name }}"
+                            class="h-full w-full object-cover"
+                        />
 
-                @else
+                    @else
 
-                    <div class="flex h-full w-full items-center justify-center bg-gray-900 text-[10px] font-semibold text-white">
-                        {{ strtoupper(substr($post->user->name, 0, 1)) }}
-                    </div>
+                        <div class="flex h-full w-full items-center justify-center bg-gray-900 text-[10px] font-semibold text-white">
+                            {{ strtoupper(substr($post->user->name, 0, 1)) }}
+                        </div>
 
-                @endif
+                    @endif
+                </a>
 
             </div>
 
-            <span class="truncate text-xs font-medium text-gray-500">
+            <a
+                href="{{ route('authors.show', $post->user) }}"
+                class="truncate text-xs font-medium text-gray-500 transition hover:text-gray-900"
+            >
                 {{ $post->user->name }}
-            </span>
+            </a>
 
         </div>
 

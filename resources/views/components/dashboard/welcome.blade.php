@@ -34,8 +34,18 @@
                         Bienvenue sur Xaamlé
                     </p>
 
+                    @php
+                        $hour = now()->hour;
+
+                        $greeting = match (true) {
+                            $hour < 12 => 'Bonjour',
+                            $hour < 18 => 'Bon après-midi',
+                            default => 'Bonsoir',
+                        };
+                    @endphp
+
                     <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900">
-                        Bonjour, {{ $user->name }} 👋
+                        {{ $greeting }}, {{ $user->name }} 👋
                     </h1>
 
                     <p class="mt-1 text-sm text-gray-500">
