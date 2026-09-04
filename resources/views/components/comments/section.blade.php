@@ -21,6 +21,7 @@
         aria-controls="comments-content"
         class="flex w-full items-center justify-between px-6 py-5 text-left transition hover:bg-gray-50"
     >
+
         <div>
 
             <h2 class="text-lg font-semibold text-gray-900">
@@ -44,10 +45,13 @@
 
         </div>
 
+
+        {{-- Icône --}}
         <span
             id="comments-toggle-icon"
             class="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-600 transition-transform duration-300"
         >
+
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 class="h-5 w-5"
@@ -56,15 +60,19 @@
                 stroke="currentColor"
                 stroke-width="2"
             >
+
                 <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     d="m19 9-7 7-7-7"
                 />
+
             </svg>
+
         </span>
 
     </button>
+
 
 
     {{-- =========================================================
@@ -78,11 +86,19 @@
 
         <div class="min-h-0 overflow-hidden">
 
-            {{-- Formulaire principal --}}
+
+            {{-- =====================================================
+                 FORMULAIRE PRINCIPAL
+            ====================================================== --}}
+
             <x-comments.form :post="$post" />
 
 
-            {{-- Liste des commentaires --}}
+
+            {{-- =====================================================
+                 LISTE DES COMMENTAIRES
+            ====================================================== --}}
+
             <div
                 id="comments-list"
                 class="divide-y divide-gray-100"
@@ -128,11 +144,10 @@
 </section>
 
 
+
 {{-- =============================================================
      JAVASCRIPT
 ============================================================= --}}
-
-@auth
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -141,9 +156,11 @@ document.addEventListener('DOMContentLoaded', () => {
         '[data-comments-section]'
     );
 
+
     if (!section) {
         return;
     }
+
 
 
     /* =========================================================
@@ -166,6 +183,12 @@ document.addEventListener('DOMContentLoaded', () => {
         .querySelector('meta[name="csrf-token"]')
         ?.getAttribute('content');
 
+
+
+    /* =========================================================
+       URLS
+    ========================================================== */
+
     const updateUrlTemplate =
         section.dataset.updateUrlTemplate;
 
@@ -179,8 +202,10 @@ document.addEventListener('DOMContentLoaded', () => {
         section.dataset.likeUrlTemplate;
 
 
+
     /* =========================================================
        HEADER
+       Accessible aux visiteurs ET aux utilisateurs connectés
     ========================================================== */
 
     const toggle = section.querySelector(
@@ -196,49 +221,61 @@ document.addEventListener('DOMContentLoaded', () => {
     );
 
 
-    toggle?.addEventListener('click', () => {
+    if (toggle && content && icon) {
 
-        const isOpen =
-            toggle.getAttribute('aria-expanded') === 'true';
+        toggle.addEventListener('click', () => {
 
-
-        toggle.setAttribute(
-            'aria-expanded',
-            String(!isOpen)
-        );
+            const isOpen =
+                toggle.getAttribute('aria-expanded') === 'true';
 
 
-        if (isOpen) {
-
-            content.classList.remove(
-                'grid-rows-[1fr]'
+            toggle.setAttribute(
+                'aria-expanded',
+                String(!isOpen)
             );
 
-            content.classList.add(
-                'grid-rows-[0fr]'
-            );
 
-            icon.classList.remove(
-                'rotate-180'
-            );
+            if (isOpen) {
 
-        } else {
+                content.classList.remove(
+                    'grid-rows-[1fr]'
+                );
 
-            content.classList.remove(
-                'grid-rows-[0fr]'
-            );
+                content.classList.add(
+                    'grid-rows-[0fr]'
+                );
 
-            content.classList.add(
-                'grid-rows-[1fr]'
-            );
+                icon.classList.remove(
+                    'rotate-180'
+                );
 
-            icon.classList.add(
-                'rotate-180'
-            );
+            } else {
 
-        }
+                content.classList.remove(
+                    'grid-rows-[0fr]'
+                );
 
-    });
+                content.classList.add(
+                    'grid-rows-[1fr]'
+                );
+
+                icon.classList.add(
+                    'rotate-180'
+                );
+
+            }
+
+        });
+
+    }
+
+
+
+    /* =========================================================
+       FONCTIONNALITÉS UTILISATEUR CONNECTÉ
+    ========================================================== */
+
+    @auth
 
 
     /* =========================================================
@@ -365,6 +402,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 console.error(error);
 
+
                 showError(
                     errorBox,
                     error.message
@@ -386,11 +424,12 @@ document.addEventListener('DOMContentLoaded', () => {
     );
 
 
+
     /* =========================================================
        DÉLÉGATION DES ÉVÉNEMENTS
     ========================================================== */
 
-    commentsList.addEventListener(
+    commentsList?.addEventListener(
         'click',
         async (event) => {
 
@@ -464,17 +503,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'toggle-replies':
                     toggleReplies(article);
                     break;
+
             }
 
         }
     );
 
 
+
     /* =========================================================
        COMPTEUR RÉPONSE
     ========================================================== */
 
-    commentsList.addEventListener(
+    commentsList?.addEventListener(
         'input',
         (event) => {
 
@@ -528,6 +569,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         }
     );
+
 
 
     /* =========================================================
@@ -593,6 +635,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(
                     'Vous devez être connecté pour aimer ce commentaire.'
                 );
+
             }
 
 
@@ -602,6 +645,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     data.message
                     ?? 'Impossible de modifier le like.'
                 );
+
             }
 
 
@@ -609,11 +653,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 Boolean(data.liked);
 
 
-            /*
-             * État du bouton
-             */
             button.dataset.liked =
                 liked ? 'true' : 'false';
+
 
             button.setAttribute(
                 'aria-pressed',
@@ -621,19 +663,14 @@ document.addEventListener('DOMContentLoaded', () => {
             );
 
 
-            /*
-             * Nombre de likes
-             */
             if (countElement) {
 
                 countElement.textContent =
                     data.likes_count;
+
             }
 
 
-            /*
-             * Nettoyage des classes
-             */
             button.classList.remove(
                 'text-red-600',
                 'hover:bg-red-50',
@@ -643,9 +680,6 @@ document.addEventListener('DOMContentLoaded', () => {
             );
 
 
-            /*
-             * État visuel
-             */
             if (liked) {
 
                 button.classList.add(
@@ -664,9 +698,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
 
-            /*
-             * Coeur rempli / vide
-             */
             if (icon) {
 
                 icon.setAttribute(
@@ -686,6 +717,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 error
             );
 
+
             showError(
                 errorElement,
                 error.message
@@ -699,6 +731,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
     }
+
 
 
     /* =========================================================
@@ -736,7 +769,9 @@ document.addEventListener('DOMContentLoaded', () => {
             'hidden'
         );
 
+
         input.focus();
+
 
         input.setSelectionRange(
             input.value.length,
@@ -744,6 +779,7 @@ document.addEventListener('DOMContentLoaded', () => {
         );
 
     }
+
 
 
     function closeEdit(article) {
@@ -801,6 +837,7 @@ document.addEventListener('DOMContentLoaded', () => {
         );
 
     }
+
 
 
     async function saveEdit(article) {
@@ -922,6 +959,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     data.message
                     ?? 'Impossible de modifier le contenu.'
                 );
+
             }
 
 
@@ -937,6 +975,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
 
             console.error(error);
+
 
             showError(
                 errorBox,
@@ -956,6 +995,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
     }
+
 
 
     /* =========================================================
@@ -991,6 +1031,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+
     function closeDelete(article) {
 
         const display =
@@ -1013,6 +1054,7 @@ document.addEventListener('DOMContentLoaded', () => {
         );
 
     }
+
 
 
     async function deleteComment(article) {
@@ -1089,8 +1131,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 throw new Error(
                     data.message
-                    ?? 'Impossible de supprimer le contenu.'
+                    ?? 'Impossible de supprimer ce contenu.'
                 );
+
             }
 
 
@@ -1177,6 +1220,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             console.error(error);
 
+
             showError(
                 errorBox,
                 error.message
@@ -1195,6 +1239,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
     }
+
 
 
     /* =========================================================
@@ -1224,6 +1269,7 @@ document.addEventListener('DOMContentLoaded', () => {
         )?.focus();
 
     }
+
 
 
     function closeReply(article) {
@@ -1265,6 +1311,7 @@ document.addEventListener('DOMContentLoaded', () => {
         );
 
     }
+
 
 
     async function submitReply(article) {
@@ -1369,6 +1416,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     data.message
                     ?? 'Impossible d’ajouter la réponse.'
                 );
+
             }
 
 
@@ -1390,6 +1438,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             console.error(error);
 
+
             showError(
                 errorBox,
                 error.message
@@ -1410,6 +1459,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+
     /* =========================================================
        AJOUTER UNE RÉPONSE
     ========================================================== */
@@ -1427,8 +1477,10 @@ document.addEventListener('DOMContentLoaded', () => {
             container =
                 document.createElement('div');
 
+
             container.dataset.repliesContainer =
                 '';
+
 
             container.className =
                 'mt-4 space-y-4 border-l-2 border-gray-100 pl-4';
@@ -1469,6 +1521,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         replyArticle.dataset.commentId =
             reply.id;
+
 
         replyArticle.dataset.replyId =
             reply.id;
@@ -1565,13 +1618,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         </p>
 
 
-                        {{-- LIKE RÉPONSE DYNAMIQUE --}}
                         ${likeButtonHtml(reply.id, 0, false)}
 
                     </div>
 
 
-                    {{-- Formulaire édition dynamique --}}
                     <div
                         data-comment-edit
                         class="hidden"
@@ -1601,14 +1652,17 @@ document.addEventListener('DOMContentLoaded', () => {
                                 Annuler
                             </button>
 
+
                             <button
                                 type="button"
                                 data-action="save-edit"
                                 class="rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
                             >
+
                                 <span data-save-text>
                                     Enregistrer
                                 </span>
+
                             </button>
 
                         </div>
@@ -1616,7 +1670,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
 
 
-                    {{-- Confirmation suppression dynamique --}}
                     <div
                         data-delete-confirm
                         class="mt-3 hidden rounded-xl border border-red-100 bg-red-50 p-3"
@@ -1643,14 +1696,78 @@ document.addEventListener('DOMContentLoaded', () => {
                                 Annuler
                             </button>
 
+
                             <button
                                 type="button"
                                 data-action="confirm-delete"
                                 class="rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
                             >
+
                                 <span data-delete-text>
                                     Supprimer
                                 </span>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        data-reply-form
+                        class="mt-4 hidden"
+                    >
+
+                        <textarea
+                            data-reply-input
+                            rows="2"
+                            maxlength="1000"
+                            placeholder="Écrire une réponse..."
+                            class="w-full resize-none rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-700 outline-none transition focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
+                        ></textarea>
+
+
+                        <div class="mt-1 flex items-center justify-between">
+
+                            <div
+                                data-reply-error
+                                class="hidden text-sm text-red-600"
+                            ></div>
+
+
+                            <span
+                                data-reply-counter
+                                class="ml-auto text-xs text-gray-400"
+                            >
+                                0 / 1000
+                            </span>
+
+                        </div>
+
+
+                        <div class="mt-2 flex justify-end gap-2">
+
+                            <button
+                                type="button"
+                                data-action="cancel-reply"
+                                class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100"
+                            >
+                                Annuler
+                            </button>
+
+
+                            <button
+                                type="button"
+                                data-action="submit-reply"
+                                disabled
+                                class="rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+
+                                <span data-reply-submit-text>
+                                    Répondre
+                                </span>
+
                             </button>
 
                         </div>
@@ -1679,6 +1796,7 @@ document.addEventListener('DOMContentLoaded', () => {
         );
 
     }
+
 
 
     /* =========================================================
@@ -1720,7 +1838,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         button.className =
-            'text-sm font-medium text-gray-500 transition hover:text-gray-900';
+            'rounded-lg px-2 py-1.5 text-sm font-medium text-gray-500 transition hover:bg-gray-100 hover:text-gray-900';
 
 
         button.innerHTML = `
@@ -1734,6 +1852,7 @@ document.addEventListener('DOMContentLoaded', () => {
         );
 
     }
+
 
 
     function toggleReplies(article) {
@@ -1756,12 +1875,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+
     function updateRepliesCount(article) {
 
+        const container =
+            article.querySelector(
+                '[data-replies-container]'
+            );
+
+
         const count =
-            article.querySelectorAll(
-                ':scope > div [data-replies-container] .reply-item'
-            ).length;
+            container
+                ? container.querySelectorAll(
+                    '.reply-item'
+                ).length
+                : 0;
 
 
         const countElement =
@@ -1793,6 +1921,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
     }
+
 
 
     /* =========================================================
@@ -1837,16 +1966,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         stroke="currentColor"
                         stroke-width="1.8"
                     >
+
                         <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
                             d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"
                         />
+
                     </svg>
+
 
                     <span>
                         J'aime
                     </span>
+
 
                     <span
                         data-like-count
@@ -1868,6 +2001,7 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
     }
+
 
 
     /* =========================================================
@@ -1967,6 +2101,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     ✏️
                                 </button>
 
+
                                 <button
                                     type="button"
                                     data-action="delete"
@@ -1989,10 +2124,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         </p>
 
 
-                        {{-- ACTIONS --}}
                         <div class="mt-3 flex flex-wrap items-center gap-2">
 
-                            {{-- LIKE --}}
                             ${likeButtonHtml(
                                 comment.id,
                                 comment.likes_count ?? 0,
@@ -2000,7 +2133,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             )}
 
 
-                            {{-- RÉPONDRE --}}
                             <button
                                 type="button"
                                 data-action="reply"
@@ -2014,7 +2146,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
 
 
-                    {{-- Édition dynamique --}}
                     <div
                         data-comment-edit
                         class="hidden"
@@ -2044,14 +2175,17 @@ document.addEventListener('DOMContentLoaded', () => {
                                 Annuler
                             </button>
 
+
                             <button
                                 type="button"
                                 data-action="save-edit"
                                 class="rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
                             >
+
                                 <span data-save-text>
                                     Enregistrer
                                 </span>
+
                             </button>
 
                         </div>
@@ -2059,7 +2193,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
 
 
-                    {{-- Confirmation suppression dynamique --}}
                     <div
                         data-delete-confirm
                         class="mt-3 hidden rounded-xl border border-red-100 bg-red-50 p-3"
@@ -2086,14 +2219,17 @@ document.addEventListener('DOMContentLoaded', () => {
                                 Annuler
                             </button>
 
+
                             <button
                                 type="button"
                                 data-action="confirm-delete"
                                 class="rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
                             >
+
                                 <span data-delete-text>
                                     Supprimer
                                 </span>
+
                             </button>
 
                         </div>
@@ -2101,7 +2237,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
 
 
-                    {{-- Réponse dynamique --}}
                     <div
                         data-reply-form
                         class="mt-4 hidden"
@@ -2123,6 +2258,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 class="hidden text-sm text-red-600"
                             ></div>
 
+
                             <span
                                 data-reply-counter
                                 class="ml-auto text-xs text-gray-400"
@@ -2143,15 +2279,18 @@ document.addEventListener('DOMContentLoaded', () => {
                                 Annuler
                             </button>
 
+
                             <button
                                 type="button"
                                 data-action="submit-reply"
                                 disabled
                                 class="rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
                             >
+
                                 <span data-reply-submit-text>
                                     Répondre
                                 </span>
+
                             </button>
 
                         </div>
@@ -2172,22 +2311,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+
     /* =========================================================
        COMPTEUR PRINCIPAL
     ========================================================== */
 
     function updateCommentsCount(count) {
 
-        commentsCount.textContent =
-            count;
+        if (commentsCount) {
+
+            commentsCount.textContent =
+                count;
+
+        }
 
 
-        commentsLabel.textContent =
-            count > 1
-                ? 'commentaires'
-                : 'commentaire';
+        if (commentsLabel) {
+
+            commentsLabel.textContent =
+                count > 1
+                    ? 'commentaires'
+                    : 'commentaire';
+
+        }
 
     }
+
 
 
     /* =========================================================
@@ -2216,9 +2365,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 💬
             </div>
 
+
             <p class="mt-3 text-sm font-medium text-gray-900">
                 Aucun commentaire
             </p>
+
 
             <p class="mt-1 text-sm text-gray-500">
                 Soyez le premier à participer à la discussion.
@@ -2232,6 +2383,7 @@ document.addEventListener('DOMContentLoaded', () => {
         );
 
     }
+
 
 
     /* =========================================================
@@ -2264,6 +2416,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+
     function showError(
         element,
         message
@@ -2285,6 +2438,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+
     function hideError(element) {
 
         if (!element) {
@@ -2295,11 +2449,13 @@ document.addEventListener('DOMContentLoaded', () => {
         element.textContent =
             '';
 
+
         element.classList.add(
             'hidden'
         );
 
     }
+
 
 
     async function parseJson(response) {
@@ -2326,6 +2482,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+
     function escapeHtml(value) {
 
         const element =
@@ -2340,7 +2497,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     }
 
+
+    @endauth
+
 });
 </script>
-
-@endauth

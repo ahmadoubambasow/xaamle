@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\AuthorFollowController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\CommentLikeController;
@@ -23,6 +24,9 @@ Route::get('/', [PublicPostController::class, 'index'])
 // Lecture d'une publication
 Route::get('/articles/{post}', [PublicPostController::class, 'show'])
     ->name('public.posts.show');
+
+Route::get('/auteurs/{author}', [AuthorController::class, 'show'])
+    ->name('authors.show');
 
 
 /*

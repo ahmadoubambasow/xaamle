@@ -141,41 +141,48 @@
 
 
                                    {{-- Auteur --}}
-                                    <div class="mt-auto flex items-center gap-3 border-t border-gray-100 pt-5">
+                                    <div class="mt-auto border-t border-gray-100 pt-5">
 
-                                        {{-- Avatar --}}
-                                        <div class="h-9 w-9 shrink-0 overflow-hidden rounded-full">
+                                        <a
+                                            href="{{ route('authors.show', $post->user) }}"
+                                            class="flex items-center gap-3 rounded-lg transition hover:opacity-80"
+                                        >
 
-                                            @if ($post->user->avatar)
+                                            {{-- Avatar --}}
+                                            <div class="h-9 w-9 shrink-0 overflow-hidden rounded-full">
 
-                                                <img
-                                                    src="{{ asset('storage/' . $post->user->avatar) }}"
-                                                    alt="Photo de {{ $post->user->name }}"
-                                                    class="h-full w-full object-cover"
-                                                >
+                                                @if ($post->user->avatar)
 
-                                            @else
+                                                    <img
+                                                        src="{{ asset('storage/' . $post->user->avatar) }}"
+                                                        alt="Photo de {{ $post->user->name }}"
+                                                        class="h-full w-full object-cover"
+                                                    >
 
-                                                <div class="flex h-full w-full items-center justify-center bg-gray-900 text-xs font-semibold text-white">
-                                                    {{ strtoupper(substr($post->user->name, 0, 1)) }}
-                                                </div>
+                                                @else
 
-                                            @endif
+                                                    <div class="flex h-full w-full items-center justify-center bg-gray-900 text-xs font-semibold text-white">
+                                                        {{ strtoupper(substr($post->user->name, 0, 1)) }}
+                                                    </div>
 
-                                        </div>
+                                                @endif
 
-                                        {{-- Informations auteur --}}
-                                        <div class="min-w-0">
+                                            </div>
 
-                                            <p class="truncate text-sm font-semibold text-gray-900">
-                                                {{ $post->user->name }}
-                                            </p>
+                                            {{-- Informations auteur --}}
+                                            <div class="min-w-0">
 
-                                            <p class="text-xs text-gray-400">
-                                                Auteur
-                                            </p>
+                                                <p class="truncate text-sm font-semibold text-gray-900">
+                                                    {{ $post->user->name }}
+                                                </p>
 
-                                        </div>
+                                                <p class="text-xs text-gray-400">
+                                                    Auteur
+                                                </p>
+
+                                            </div>
+
+                                        </a>
 
                                     </div>
 
