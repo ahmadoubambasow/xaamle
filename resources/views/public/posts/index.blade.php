@@ -96,7 +96,7 @@
                                 @else
 
                                     <a
-                                        href="{{ route('posts.show', $post) }}"
+                                        href="{{ route('public.posts.show', $post) }}"
                                         class="flex h-52 items-center justify-center bg-gray-100"
                                     >
                                         <span class="text-5xl text-gray-300">
